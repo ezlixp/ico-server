@@ -1,13 +1,12 @@
 ﻿import { Request, Router } from "express";
 import { JwtTokenHandler } from "../security/jwtHandler";
 import { DefaultResponse } from "../communication/responses/defaultResponse";
-import { getToken } from "../communication/httpClients/discordApiClient";
+import { getToken, getUser } from "../communication/httpClients/discordApiClient";
 import { ValidationError } from "../errors/implementations/validationError";
 import { getPlayersGuildAsync } from "../communication/httpClients/wynncraftApiClient";
 import { TokenResponse } from "../communication/responses/tokenResponse";
 import { TokenErrors } from "../errors/messages/tokenErrors";
 import { usernameToUuid } from "../communication/httpClients/mojangApiClient";
-import Services from "../services/services";
 
 /**
  * Maps all authentication-related endpoints. endpoint: .../auth/
@@ -65,31 +64,21 @@ const authorizationCode = async (
 
     const mcUsername = request.body.mcUsername;
     const discordToken = await getToken(code);
-    // bypass verification logic for now since rate limited
+
+    if (!discordToken) throw new ValidationError("error validating discord account");
+
+    const discordUser = await getUser(discordToken.access_token);
+
+    if (!discordUser) throw new ValidationError("could not validate discord account");
+
+    // Checks database to see if mc username is properly linked with logged in discord account
     return response.send(
         await tokenHandler.generateToken(
-            (
-                await Services.user.getUser({ mcUuid: await usernameToUuid(mcUsername) })
-            ).discordUuid,
+            discordUser.id,
             await getPlayersGuildAsync(mcUsername),
             await usernameToUuid(mcUsername)
         )
     );
-
-    // if (!discordToken) throw new ValidationError("error validating discord account");
-
-    // const discordUser = await getUser(discordToken.access_token);
-
-    // if (!discordUser) throw new ValidationError("could not validate discord account");
-
-    // // Checks database to see if mc username is properly linked with logged in discord account
-    // return response.send(
-    //     await tokenHandler.generateToken(
-    //         discordUser.id,
-    //         await getPlayersGuildAsync(mcUsername),
-    //         await usernameToUuid(mcUsername)
-    //     )
-    // );
 };
 
 const refreshToken = async (request: Request<{}, {}, IRefreshRequest>, response: DefaultResponse<TokenResponse>) => {
