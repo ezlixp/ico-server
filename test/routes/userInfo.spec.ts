@@ -17,7 +17,7 @@ describe("User info routes", () => {
                 mcUuid: "39365bd45c7841de8901c7dc5b7c64c4",
                 muted: false,
                 refreshToken: "none",
-                onlineStatus: 0,
+                onlineStatus: 1,
                 verified: true,
             },
             {
@@ -136,13 +136,13 @@ describe("User info routes", () => {
         });
     });
 
-    describe(`GET /api/${API_VERSION}/user/onlineStatus/:discordUuid`, () => {
+    describe(`GET /api/${API_VERSION}/user/onlineStatus/:mcUuid`, () => {
         it("should get a user's online status", async () => {
             const res = await request
-                .get(`/api/${API_VERSION}/user/onlineStatus/752610633580675175`)
+                .get(`/api/${API_VERSION}/user/onlineStatus/39365bd45c7841de8901c7dc5b7c64c4`)
                 .set(await authHeader)
                 .expect(200);
-            expect(res.body).toBe(3);
+            expect(res.body).toBe(1);
         });
 
         it("should handle missing user", async () => {
@@ -168,10 +168,10 @@ describe("User info routes", () => {
         });
     });
 
-    describe(`POST /api/${API_VERSION}/user/status/:discordUuid`, () => {
+    describe(`POST /api/${API_VERSION}/user/onlineStatus/:mcUuid`, () => {
         it("should change the online status of a user", async () => {
             const res = await request
-                .post(`/api/${API_VERSION}/user/onlineStatus/752610633580675175`)
+                .post(`/api/${API_VERSION}/user/onlineStatus/39365bd45c7841de8901c7dc5b7c64c4`)
                 .send({
                     onlineStatus: 0,
                 })
@@ -180,7 +180,7 @@ describe("User info routes", () => {
             expect(res.body.onlineStatus).toBe(0);
 
             const res2 = await request
-                .post(`/api/${API_VERSION}/user/onlineStatus/752610633580675175`)
+                .post(`/api/${API_VERSION}/user/onlineStatus/39365bd45c7841de8901c7dc5b7c64c4`)
                 .send({
                     onlineStatus: 3,
                 })
@@ -219,7 +219,7 @@ describe("User info routes", () => {
 
         it("should reject invalid status values", async () => {
             const res = await request
-                .post(`/api/${API_VERSION}/user/onlineStatus/752610633580675175`)
+                .post(`/api/${API_VERSION}/user/onlineStatus/39365bd45c7841de8901c7dc5b7c64c4`)
                 .send({
                     onlineStatus: -1,
                 })
@@ -232,7 +232,7 @@ describe("User info routes", () => {
             });
 
             const res2 = await request
-                .post(`/api/${API_VERSION}/user/onlineStatus/752610633580675175`)
+                .post(`/api/${API_VERSION}/user/onlineStatus/39365bd45c7841de8901c7dc5b7c64c4`)
                 .send({
                     onlineStatus: 4,
                 })
