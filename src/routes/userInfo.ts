@@ -52,18 +52,21 @@ userInfoRouter.delete(
 );
 
 userInfoRouter.get(
-    "/status/:discordUuid",
+    "/onlineStatus/:discordUuid",
     async (request: Request<{ discordUuid: string }>, response: DefaultResponse<number>) => {
-        response.send((await Services.user.getUser({ discordUuid: request.params.discordUuid })).status);
+        response.send((await Services.user.getUser({ discordUuid: request.params.discordUuid })).onlineStatus);
     }
 );
 
 userInfoRouter.post(
-    "/status/:discordUuid",
-    async (request: Request<{ discordUuid: string }, {}, { status: number }>, response: DefaultResponse<IUser>) => {
+    "/onlineStatus/:discordUuid",
+    async (
+        request: Request<{ discordUuid: string }, {}, { onlineStatus: number }>,
+        response: DefaultResponse<IUser>
+    ) => {
         const updatedUser = await Services.user.updateUser(
             { discordUuid: request.params.discordUuid },
-            { status: request.body.status }
+            { onlineStatus: request.body.onlineStatus }
         );
 
         response.send(updatedUser);

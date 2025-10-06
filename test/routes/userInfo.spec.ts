@@ -17,7 +17,7 @@ describe("User info routes", () => {
                 mcUuid: "39365bd45c7841de8901c7dc5b7c64c4",
                 muted: false,
                 refreshToken: "none",
-                status: 0,
+                onlineStatus: 0,
                 verified: true,
             },
             {
@@ -27,7 +27,7 @@ describe("User info routes", () => {
                 mcUuid: "",
                 muted: false,
                 refreshToken: "none",
-                status: 3,
+                onlineStatus: 3,
                 verified: true,
             },
         ]);
@@ -136,10 +136,10 @@ describe("User info routes", () => {
         });
     });
 
-    describe(`GET /api/${API_VERSION}/user/status/:discordUuid`, () => {
+    describe(`GET /api/${API_VERSION}/user/onlineStatus/:discordUuid`, () => {
         it("should get a user's online status", async () => {
             const res = await request
-                .get(`/api/${API_VERSION}/user/status/752610633580675175`)
+                .get(`/api/${API_VERSION}/user/onlineStatus/752610633580675175`)
                 .set(await authHeader)
                 .expect(200);
             expect(res.body).toBe(3);
@@ -147,7 +147,7 @@ describe("User info routes", () => {
 
         it("should handle missing user", async () => {
             const res = await request
-                .get(`/api/${API_VERSION}/user/status/incorrect`)
+                .get(`/api/${API_VERSION}/user/onlineStatus/incorrect`)
                 .set(await authHeader)
                 .expect(404);
             expect(res.body).toMatchObject<ErrorResponse>({
@@ -157,7 +157,7 @@ describe("User info routes", () => {
             });
 
             const res2 = await request
-                .get(`/api/${API_VERSION}/user/status/`)
+                .get(`/api/${API_VERSION}/user/onlineStatus/`)
                 .set(await authHeader)
                 .expect(404);
             expect(res2.body).toMatchObject<ErrorResponse>({
@@ -171,29 +171,29 @@ describe("User info routes", () => {
     describe(`POST /api/${API_VERSION}/user/status/:discordUuid`, () => {
         it("should change the online status of a user", async () => {
             const res = await request
-                .post(`/api/${API_VERSION}/user/status/752610633580675175`)
+                .post(`/api/${API_VERSION}/user/onlineStatus/752610633580675175`)
                 .send({
-                    status: 0,
+                    onlineStatus: 0,
                 })
                 .set(await authHeader)
                 .expect(200);
-            expect(res.body.status).toBe(0);
+            expect(res.body.onlineStatus).toBe(0);
 
             const res2 = await request
-                .post(`/api/${API_VERSION}/user/status/752610633580675175`)
+                .post(`/api/${API_VERSION}/user/onlineStatus/752610633580675175`)
                 .send({
-                    status: 3,
+                    onlineStatus: 3,
                 })
                 .set(await authHeader)
                 .expect(200);
-            expect(res2.body.status).toBe(3);
+            expect(res2.body.onlineStatus).toBe(3);
         });
 
         it("should handle missing user", async () => {
             const res = await request
-                .post(`/api/${API_VERSION}/user/status/`)
+                .post(`/api/${API_VERSION}/user/onlineStatus/`)
                 .send({
-                    status: 0,
+                    onlineStatus: 0,
                 })
                 .set(await authHeader)
                 .expect(404);
@@ -204,9 +204,9 @@ describe("User info routes", () => {
             });
 
             const res2 = await request
-                .post(`/api/${API_VERSION}/user/status/incorrect`)
+                .post(`/api/${API_VERSION}/user/onlineStatus/incorrect`)
                 .send({
-                    status: 400,
+                    onlineStatus: 4,
                 })
                 .set(await authHeader)
                 .expect(404);
@@ -219,9 +219,9 @@ describe("User info routes", () => {
 
         it("should reject invalid status values", async () => {
             const res = await request
-                .post(`/api/${API_VERSION}/user/status/752610633580675175`)
+                .post(`/api/${API_VERSION}/user/onlineStatus/752610633580675175`)
                 .send({
-                    status: -1,
+                    onlineStatus: -1,
                 })
                 .set(await authHeader)
                 .expect(500);
@@ -232,9 +232,9 @@ describe("User info routes", () => {
             });
 
             const res2 = await request
-                .post(`/api/${API_VERSION}/user/status/752610633580675175`)
+                .post(`/api/${API_VERSION}/user/onlineStatus/752610633580675175`)
                 .send({
-                    status: 4,
+                    onlineStatus: 4,
                 })
                 .set(await authHeader)
                 .expect(500);
