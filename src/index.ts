@@ -11,6 +11,7 @@ process.on("SIGTERM", async () => {
     console.log("shutting down...");
     server.close();
     await mongoose.disconnect();
+    process.exit(0);
 });
 // Connect to database
 try {
