@@ -42,7 +42,7 @@ function validateJwtToken(
         if (p.guildId !== "*" && (request.params.discordUuid || request.params.mcUuid)) {
             const discordUuid =
                 request.params.discordUuid ||
-                (await Services.user.getUser({ mcUuid: request.params.mcUuid })).discordUuid;
+                (await Services.user.getUser({ mcUuid: request.params.mcUuid?.replaceAll("-", "") })).discordUuid;
             if (request.params.discordUuid && discordUuid !== p.discordUuid) {
                 throw new ValidationError(TokenErrors.UNPRIVILEGED_TOKEN);
             }

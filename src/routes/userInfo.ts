@@ -54,15 +54,17 @@ userInfoRouter.delete(
 userInfoRouter.get(
     "/onlineStatus/:mcUuid",
     async (request: Request<{ mcUuid: string }>, response: DefaultResponse<number>) => {
-        response.send((await Services.user.getUser({ mcUuid: request.params.mcUuid })).onlineStatus);
+        const uuid = request.params.mcUuid.replaceAll("-", "");
+        response.send((await Services.user.getUser({ mcUuid: uuid })).onlineStatus);
     }
 );
 
 userInfoRouter.post(
     "/onlineStatus/:mcUuid",
     async (request: Request<{ mcUuid: string }, {}, { onlineStatus: number }>, response: DefaultResponse<IUser>) => {
+        const uuid = request.params.mcUuid.replaceAll("-", "");
         const updatedUser = await Services.user.updateUser(
-            { mcUuid: request.params.mcUuid },
+            { mcUuid: uuid },
             { onlineStatus: request.body.onlineStatus }
         );
 
