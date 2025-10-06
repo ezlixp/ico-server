@@ -9,7 +9,7 @@ import { GuildErrors } from "../errors/messages/guildErrors";
 import { NotFoundError } from "../errors/implementations/notFoundError";
 
 export default async function verifyInGuild(
-    request: GuildRequest<{}, {}, { mcUsername: string }>,
+    request: GuildRequest<{}, {}, { mcUsername: string } & any>,
     response: Response,
     next: NextFunction
 ) {

@@ -14,7 +14,7 @@ const secretKey = process.env.JWT_SECRET_KEY as string;
  * else, return void.
  */
 function validateJwtToken(
-    request: Request<{ wynnGuildId?: string; mcUuid?: string; discordUuid?: string }>,
+    request: Request<{ wynnGuildId?: string; mcUuid?: string; discordUuid?: string } & any>,
     response: Response,
     next: NextFunction
 ) {
@@ -27,7 +27,7 @@ function validateJwtToken(
     // Get authorization headers and extract token from "Bearer <token>"
     const token = authorizationHeader.split(" ")[1];
 
-    jwt.verify(token, secretKey, async (err, payload) => {
+    jwt.verify(token, secretKey, (err, payload) => {
         if (err) {
             throw new ValidationError(TokenErrors.INVALID_TOKEN);
         }
@@ -40,15 +40,18 @@ function validateJwtToken(
             throw new ValidationError(TokenErrors.UNPRIVILEGED_TOKEN);
         }
         if (p.guildId !== "*" && (request.params.discordUuid || request.params.mcUuid)) {
-            const discordUuid =
-                request.params.discordUuid ||
-                (await Services.user.getUser({ mcUuid: request.params.mcUuid?.replaceAll("-", "") })).discordUuid;
-            console.log(discordUuid, request.params.discordUuid, request.params.mcUuid, p.discordUuid);
-            if (discordUuid !== p.discordUuid) {
-                throw new ValidationError(TokenErrors.UNPRIVILEGED_TOKEN);
+            if (request.params.discordUuid) {
+                if (request.params.discordUuid !== p.discordUuid) {
+                    throw new ValidationError(TokenErrors.UNPRIVILEGED_TOKEN);
+                }
+                next();
+            } else {
+                Services.user.getUser({ mcUuid: request.params.mcUuid?.replaceAll("-", "") }).then((val) => {
+                    if (val.discordUuid !== p.discordUuid) next(new ValidationError(TokenErrors.UNPRIVILEGED_TOKEN));
+                    else next();
+                });
             }
-        }
-        next(); // Goes to next step (function execution)
+        } else next(); // Goes to next step (function execution)
     });
 }
 

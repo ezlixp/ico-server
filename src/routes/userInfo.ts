@@ -15,11 +15,11 @@ import { kickUser } from "../utils/socketUtils";
  */
 
 const userInfoRouter = Router();
-userInfoRouter.use(validateJwtToken);
 
 // TODO: validate token for uuid being updated
 userInfoRouter.get(
     "/blocked/:mcUuid",
+    validateJwtToken,
     async (request: Request<{ mcUuid: string }>, response: DefaultResponse<string[]>) => {
         const mcUuid = request.params.mcUuid.replaceAll("-", "");
         const blockedList = await Services.user.getBlockedList({ mcUuid: mcUuid });
@@ -30,6 +30,7 @@ userInfoRouter.get(
 
 userInfoRouter.post(
     "/blocked/:mcUuid",
+    validateJwtToken,
     async (request: Request<{ mcUuid: string }, {}, { toBlock: string }>, response: DefaultResponse<IUser>) => {
         const toBlock = request.body.toBlock;
         const uuid = request.params.mcUuid.replaceAll("-", "");
@@ -41,6 +42,7 @@ userInfoRouter.post(
 
 userInfoRouter.delete(
     "/blocked/:mcUuid",
+    validateJwtToken,
     async (request: Request<{ mcUuid: string }, {}, {}, { toRemove: string }>, response: DefaultResponse<IUser>) => {
         const uuid = request.params.mcUuid.replaceAll("-", "");
         const toRemove = request.query.toRemove;
@@ -53,6 +55,7 @@ userInfoRouter.delete(
 
 userInfoRouter.get(
     "/onlineStatus/:mcUuid",
+    validateJwtToken,
     async (request: Request<{ mcUuid: string }>, response: DefaultResponse<number>) => {
         const uuid = request.params.mcUuid.replaceAll("-", "");
         response.send((await Services.user.getUser({ mcUuid: uuid })).onlineStatus);
@@ -61,6 +64,7 @@ userInfoRouter.get(
 
 userInfoRouter.post(
     "/onlineStatus/:mcUuid",
+    validateJwtToken,
     async (request: Request<{ mcUuid: string }, {}, { onlineStatus: number }>, response: DefaultResponse<IUser>) => {
         const uuid = request.params.mcUuid.replaceAll("-", "");
         const updatedUser = await Services.user.updateUser(
