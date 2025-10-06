@@ -122,6 +122,8 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
                 .findByIdAndUpdate(id, update, {
                     new: true,
                     collation: { locale: "en", strength: 2 },
+                    runValidators: true,
+                    context: "query",
                 })
                 .exec();
             if (!document) throw new DatabaseError();

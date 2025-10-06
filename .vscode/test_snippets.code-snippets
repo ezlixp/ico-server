@@ -7,7 +7,8 @@
             "\t\tconst res = await request.${1/(.*)/${1:/downcase}/}(`/api/\\${API_VERSION}/$2`).expect(200)$0",
             "\t})",
             "})"
-        ]
+        ],
+        "scope": "typescript"
     },
 
     "ico server id": {
@@ -23,7 +24,8 @@
             "\ttitle: \"Error\",",
             "\terrorMessage: GuildErrors.NOT_CONFIGURED,",
             "});"
-        ]
+        ],
+        "scope": "typescript"
     }
 
     // Place your ico_server workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and
