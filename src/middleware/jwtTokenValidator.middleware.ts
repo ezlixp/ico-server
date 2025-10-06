@@ -43,6 +43,7 @@ function validateJwtToken(
             const discordUuid =
                 request.params.discordUuid ||
                 (await Services.user.getUser({ mcUuid: request.params.mcUuid?.replaceAll("-", "") })).discordUuid;
+            console.log(discordUuid, request.params.discordUuid, request.params.mcUuid, p.discordUuid);
             if (discordUuid !== p.discordUuid) {
                 throw new ValidationError(TokenErrors.UNPRIVILEGED_TOKEN);
             }
