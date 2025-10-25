@@ -55,6 +55,7 @@ userInfoRouter.delete(
 
 userInfoRouter.get(
     "/onlineStatus/:mcUuid",
+    validateJwtToken,
     async (request: Request<{ mcUuid: string }>, response: DefaultResponse<number>) => {
         const uuid = request.params.mcUuid.replaceAll("-", "");
         response.send((await Services.user.getUser({ mcUuid: uuid })).onlineStatus);
