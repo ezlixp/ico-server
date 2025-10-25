@@ -377,9 +377,9 @@ io.of("/discord").on("connection", (socket) => {
     socket.on(
         "discordMessage",
         errorHandler(async (message: IB2SDiscord2WynnMessage) => {
-            console.log(message);
             const mcUuid = (await Services.user.getUserByDiscord(message.DiscordUuid))?.mcUuid;
             const mcUsername = mcUuid ? await uuidToUsername(mcUuid) : undefined;
+            console.log(message, "mcusername: ", mcUsername);
             io.of("/discord")
                 .to(message.WynnGuildId)
                 .emit("discordMessage", {
