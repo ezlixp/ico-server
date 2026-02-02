@@ -16,9 +16,9 @@ adminRouter.post(
     validateAdminJwtToken,
     async (request: Request<{}, {}, IAddGuildRequest>, response: DefaultResponse<IGuildInfo>) => {
         const guildObj = new GuildInfoImpl(
-            request.body.discordGuildId,
             request.body.wynnGuildId,
             request.body.wynnGuildName,
+            request.body.discordGuildId,
         );
 
         const newGuild = await Services.guildInfo.createNewGuild(guildObj);
