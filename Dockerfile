@@ -3,13 +3,12 @@ WORKDIR /usr/local/app
 
 FROM base AS backend-deps
 COPY package*.json ./
+COPY tsconfig.json ./
+COPY src ./src
 RUN npm ci
 
-# TODO: use env injection
 FROM backend-deps AS backend-build
-COPY tsconfig.json ./
 COPY .env.* ./
-COPY src ./src
 RUN npx tsc
 
 FROM backend-build AS backend-test
@@ -22,8 +21,8 @@ COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 
-FROM backend-build AS backend-dev
-CMD ["npm", "run", "dev"]
+FROM backend-deps AS backend-dev
+CMD ["npm", "run", "dev:docker"]
 
 FROM node:22-slim AS backend-final
 WORKDIR /usr/local/app

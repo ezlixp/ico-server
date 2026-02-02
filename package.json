@@ -5,7 +5,8 @@
     "main": "index.ts",
     "scripts": {
         "test": "cross-env NODE_ENV=test jest --detectOpenHandles --noStackTrace",
-        "dev": "cross-env NODE_ENV=development tsx --watch src/index.ts"
+        "dev": "cross-env NODE_ENV=development tsx --watch src/index.ts",
+        "dev:docker": "nodemon src/index.ts"
     },
     "author": "",
     "license": "LGPL-3.0-only",
