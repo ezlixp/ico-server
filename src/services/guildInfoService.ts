@@ -22,7 +22,7 @@ export class GuildInfoService {
     }
 
     public async createNewGuild(
-        guildRequest: { discordGuildId: string; wynnGuildId: string } & Partial<IGuildInfo>
+        guildRequest: { discordGuildId: string; wynnGuildId: string } & Partial<IGuildInfo>,
     ): Promise<HydratedDocument<IGuildInfo>> {
         await this.checkDuplicateGuild(guildRequest.discordGuildId, guildRequest.wynnGuildId);
 
@@ -37,7 +37,7 @@ export class GuildInfoService {
             { discordGuildId: discordGuildId },
             undefined,
             undefined,
-            GuildErrors.NOT_CONFIGURED
+            GuildErrors.NOT_CONFIGURED,
         );
 
         return guild;
@@ -50,7 +50,7 @@ export class GuildInfoService {
 
     public async updateGuildInfo(
         discordGuildId: string,
-        update: UpdateQuery<IGuildInfoOptionals>
+        update: UpdateQuery<IGuildInfoOptionals>,
     ): Promise<HydratedDocument<IGuildInfo>> {
         const { privilegedRoles = [], mutedUuids = [], ...rest } = update;
 
@@ -60,7 +60,7 @@ export class GuildInfoService {
                 ...rest,
                 ...{ $addToSet: { privilegedRoles: { $each: privilegedRoles }, mutedUuids: { $each: mutedUuids } } },
             },
-            GuildErrors.NOT_CONFIGURED
+            GuildErrors.NOT_CONFIGURED,
         );
     }
 
@@ -68,7 +68,7 @@ export class GuildInfoService {
         return await this.repository.update(
             { discordGuildId: discordGuildId },
             { $addToSet: { mutedUuids: mutedUuid } },
-            GuildErrors.NOT_CONFIGURED
+            GuildErrors.NOT_CONFIGURED,
         );
     }
 
@@ -76,7 +76,7 @@ export class GuildInfoService {
         return await this.repository.update(
             { discordGuildId: discordGuildId },
             { $pull: { mutedUuids: mutedUuid } },
-            GuildErrors.NOT_CONFIGURED
+            GuildErrors.NOT_CONFIGURED,
         );
     }
 
@@ -85,7 +85,7 @@ export class GuildInfoService {
             { wynnGuildId: wynnGuildId },
             undefined,
             undefined,
-            GuildErrors.NOT_CONFIGURED
+            GuildErrors.NOT_CONFIGURED,
         );
 
         return guild.mutedUuids.includes(mcUuid);
