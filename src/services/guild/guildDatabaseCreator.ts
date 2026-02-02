@@ -16,7 +16,6 @@ export class GuildDatabaseCreator {
                 console.warn("trying to register already existing database:", wynnGuildName);
             return;
         }
-        console.log("hi");
         wynnGuildName = wynnGuildName.replaceAll(" ", "+");
         guildIds[wynnGuildName] = wynnGuildId;
         guildNames[wynnGuildId] = wynnGuildName;
