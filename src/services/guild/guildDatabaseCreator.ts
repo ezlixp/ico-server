@@ -16,19 +16,21 @@ export class GuildDatabaseCreator {
                 console.warn("trying to register already existing database:", wynnGuildName);
             return;
         }
+        console.log("hi");
+        wynnGuildName = wynnGuildName.replaceAll(" ", "+");
         guildIds[wynnGuildName] = wynnGuildId;
         guildNames[wynnGuildId] = wynnGuildName;
-        this.registerDatabase([wynnGuildName, wynnGuildId]);
+        this.registerDatabase(wynnGuildName, wynnGuildId);
     }
 
-    registerDatabase(value: [string, string]) {
-        if (process.env.NODE_ENV !== "test") console.log(value);
+    registerDatabase(wynnGuildName: string, wynnGuildId: string) {
+        if (process.env.NODE_ENV !== "test") console.log(wynnGuildName, wynnGuildId);
 
-        const dbName = value[0];
+        const dbName = wynnGuildName;
         const db = mongoose.connection.useDb(dbName);
         const databaseFactory = GuildDatabaseFactory.create(db);
 
-        guildDatabases[value[1]] = databaseFactory.createDatabase();
+        guildDatabases[wynnGuildId] = databaseFactory.createDatabase();
     }
 
     private async dropDatabase(guild: string) {
@@ -62,7 +64,7 @@ export class GuildDatabaseCreator {
 
         if (process.env.NODE_ENV !== "test") console.log("registered guilds:", JSON.stringify(guildIds, null, 2));
         Object.entries(guildIds).forEach((value) => {
-            this.registerDatabase(value);
+            this.registerDatabase(value[0], value[1]);
         });
     }
 }
