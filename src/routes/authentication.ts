@@ -24,7 +24,7 @@ interface IRefreshRequest {
 }
 
 const authCodeRequestValidator: (request: Request<unknown>) => asserts request is Request<{}, {}, IAuthCodeRequest> = (
-    request
+    request,
 ) => {
     if (typeof request !== "object" || request.body === null) {
         throw new ValidationError("Invalid body.");
@@ -42,7 +42,7 @@ const authCodeRequestValidator: (request: Request<unknown>) => asserts request i
 };
 
 const refreshRequestValidator: (request: Request<unknown>) => asserts request is Request<{}, {}, IRefreshRequest> = (
-    request
+    request,
 ) => {
     if (typeof request !== "object" || request.body === null) {
         throw new ValidationError("Invalid body.");
@@ -57,13 +57,14 @@ const refreshRequestValidator: (request: Request<unknown>) => asserts request is
 
 const authorizationCode = async (
     request: Request<{}, {}, IAuthCodeRequest>,
-    response: DefaultResponse<TokenResponse>
+    response: DefaultResponse<TokenResponse>,
 ) => {
     const code = request.body.code;
     if (code === process.env.JWT_VALIDATION_KEY) return response.send(await tokenHandler.generateAdminToken());
 
     const mcUsername = request.body.mcUsername;
     const discordToken = await getToken(code);
+    console.log(discordToken);
 
     if (!discordToken) throw new ValidationError("error validating discord account");
 
@@ -76,8 +77,8 @@ const authorizationCode = async (
         await tokenHandler.generateToken(
             discordUser.id,
             await getPlayersGuildAsync(mcUsername),
-            await usernameToUuid(mcUsername)
-        )
+            await usernameToUuid(mcUsername),
+        ),
     );
 };
 
@@ -89,7 +90,7 @@ authenticationRouter.post(
     "/token",
     async (
         request: Request<{}, {}, { grantType: string } & (IAuthCodeRequest | IRefreshRequest)>,
-        response: DefaultResponse
+        response: DefaultResponse,
     ) => {
         const grant_type = request.body.grantType;
         if (grant_type === "authorization_code") {
@@ -100,7 +101,7 @@ authenticationRouter.post(
             return refreshToken(request, response);
         }
         throw new ValidationError("Invalid grant type");
-    }
+    },
 );
 
 export default authenticationRouter;

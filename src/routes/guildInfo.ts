@@ -5,8 +5,12 @@ import validateAdminJwtToken from "../middleware/jwtAdminTokenValidator.middlewa
 import Services from "../services/services";
 import { setMuteUser } from "../utils/socketUtils";
 
-interface InfoRequest<Params = Record<string, any>, ResBody = any, ReqBody = any, ReqQuery = any>
-    extends Request<Params & { discordGuildId: string }, ResBody, ReqBody, ReqQuery> {}
+interface InfoRequest<Params = Record<string, any>, ResBody = any, ReqBody = any, ReqQuery = any> extends Request<
+    Params & { discordGuildId: string },
+    ResBody,
+    ReqBody,
+    ReqQuery
+> {}
 
 function clearUnsafe(request: InfoRequest<{}, {}, Partial<IGuildInfo>>, response: any, next: NextFunction) {
     request.body.discordGuildId = undefined;
@@ -43,7 +47,7 @@ guildInfoRouter.patch(
     clearUnsafe,
     async (request: InfoRequest<{}, {}, Partial<IGuildInfoOptionals>>, response: DefaultResponse<IGuildInfo>) => {
         response.send(await Services.guildInfo.updateGuildInfo(request.params.discordGuildId, request.body));
-    }
+    },
 );
 
 guildInfoRouter.post(
@@ -51,7 +55,7 @@ guildInfoRouter.post(
     async (request: InfoRequest<{}, {}, { discordUuid: string }>, response: DefaultResponse<IGuildInfo>) => {
         setMuteUser(request.body.discordUuid, true);
         response.send(await Services.guildInfo.mute(request.params.discordGuildId, request.body.discordUuid));
-    }
+    },
 );
 
 guildInfoRouter.delete(
@@ -59,7 +63,7 @@ guildInfoRouter.delete(
     async (request: InfoRequest<{}, {}, { discordUuid: string }>, response: DefaultResponse<IGuildInfo>) => {
         setMuteUser(request.body.discordUuid, false);
         response.send(await Services.guildInfo.unmute(request.params.discordGuildId, request.body.discordUuid));
-    }
+    },
 );
 
 export default infoRouter;
