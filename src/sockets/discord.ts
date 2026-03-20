@@ -34,7 +34,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
                     Promise.all(
                         newRaid.users.map(async (username) => {
                             await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5);
-                        })
+                        }),
                     );
                 });
             } catch (error) {
@@ -155,7 +155,11 @@ const errorHandler = (toHandle: Function) => {
     };
 };
 
-// TODO: make middleware for handling mutes
+io.of(/^\/.*/).on("connect", (socket) => {
+    console.log(`New connection attempt:`);
+    console.log(`  Namespace: ${socket.nsp.name}`);
+    console.log(`  Socket ID: ${socket.id}`);
+});
 io.of("/discord").on("connection", (socket) => {
     console.log(socket.data.username, "connected to discord with version:", socket.data.modVersion);
     if (socket.data.wynnGuildId === "*") {
@@ -234,7 +238,7 @@ io.of("/discord").on("connection", (socket) => {
                                 "discord:",
                                 socket.data.discordUuid,
                                 "guild:",
-                                socket.data.wynnGuildId
+                                socket.data.wynnGuildId,
                             );
 
                             let discordUuid: string | undefined;
@@ -251,7 +255,7 @@ io.of("/discord").on("connection", (socket) => {
                                         .replace(new RegExp("§.", "g"), "")
                                         .replace(
                                             ENCODED_DATA_PATTERN,
-                                            (match, _) => `**__${decodeItem(match).name}__**`
+                                            (match, _) => `**__${decodeItem(match).name}__**`,
                                         );
                                     isOnline(header, socket.data.wynnGuildId).then((online) => {
                                         io.of("/discord")
@@ -271,7 +275,7 @@ io.of("/discord").on("connection", (socket) => {
                     ++socket.data.messageIndex;
                 }
             });
-        })
+        }),
     );
 
     /**
@@ -311,7 +315,7 @@ io.of("/discord").on("connection", (socket) => {
                                 "discord:",
                                 socket.data.discordUuid,
                                 "guild:",
-                                socket.data.wynnGuildId
+                                socket.data.wynnGuildId,
                             );
                             const message = rawMessage.replace(new RegExp("§.", "g"), "");
                             io.of("/discord")
@@ -329,7 +333,7 @@ io.of("/discord").on("connection", (socket) => {
                     ++socket.data.hrMessageIndex;
                 }
             });
-        })
+        }),
     );
 
     /**
@@ -348,9 +352,9 @@ io.of("/discord").on("connection", (socket) => {
                 const header = matcher.groups!.header;
                 const message = matcher.groups!.content.replace(
                     ENCODED_DATA_PATTERN,
-                    (match, _) => `<${decodeItem(match).name}>`
+                    (match, _) => `<${decodeItem(match).name}>`,
                 );
-                console.log(message);
+                console.log(message, "discord only");
                 io.of("/discord")
                     .to(botId)
                     .emit("wynnMessage", {
@@ -368,7 +372,7 @@ io.of("/discord").on("connection", (socket) => {
                         WynnGuildId: socket.data.wynnGuildId,
                     });
             }
-        })
+        }),
     );
 
     /**
@@ -387,14 +391,14 @@ io.of("/discord").on("connection", (socket) => {
                     McUsername: mcUsername,
                     Content: message.Content.replace(/[‌⁤ÁÀ֎]/g, ""),
                 });
-        })
+        }),
     );
 
     socket.on(
         "listOnline",
         errorHandler(async (callback: Function) => {
             callback((await getOnlineUsers(socket.data.wynnGuildId)).map((onlineUser) => onlineUser.McUsername));
-        })
+        }),
     );
 
     socket.on("sync", (ack) => {
@@ -431,7 +435,7 @@ io.of("/discord").on("connection", (socket) => {
                     disconnectTimers[socket.data.discordUuid] = null;
                 }, 10000);
             }
-        })
+        }),
     );
 });
 
