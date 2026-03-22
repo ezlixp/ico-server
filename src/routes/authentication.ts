@@ -1,12 +1,12 @@
 ﻿import { Request, Router } from "express";
 import { JwtTokenHandler } from "../security/jwtHandler";
 import { DefaultResponse } from "../communication/responses/defaultResponse";
-import { getToken, getUser } from "../communication/httpClients/discordApiClient";
 import { ValidationError } from "../errors/implementations/validationError";
 import { getPlayersGuildAsync } from "../communication/httpClients/wynncraftApiClient";
 import { TokenResponse } from "../communication/responses/tokenResponse";
 import { TokenErrors } from "../errors/messages/tokenErrors";
 import { usernameToUuid } from "../communication/httpClients/mojangApiClient";
+import Services from "../services/services";
 
 /**
  * Maps all authentication-related endpoints. endpoint: .../auth/
@@ -24,7 +24,7 @@ interface IRefreshRequest {
 }
 
 const authCodeRequestValidator: (request: Request<unknown>) => asserts request is Request<{}, {}, IAuthCodeRequest> = (
-    request
+    request,
 ) => {
     if (typeof request !== "object" || request.body === null) {
         throw new ValidationError("Invalid body.");
@@ -42,7 +42,7 @@ const authCodeRequestValidator: (request: Request<unknown>) => asserts request i
 };
 
 const refreshRequestValidator: (request: Request<unknown>) => asserts request is Request<{}, {}, IRefreshRequest> = (
-    request
+    request,
 ) => {
     if (typeof request !== "object" || request.body === null) {
         throw new ValidationError("Invalid body.");
@@ -57,27 +57,30 @@ const refreshRequestValidator: (request: Request<unknown>) => asserts request is
 
 const authorizationCode = async (
     request: Request<{}, {}, IAuthCodeRequest>,
-    response: DefaultResponse<TokenResponse>
+    response: DefaultResponse<TokenResponse>,
 ) => {
     const code = request.body.code;
     if (code === process.env.JWT_VALIDATION_KEY) return response.send(await tokenHandler.generateAdminToken());
 
     const mcUsername = request.body.mcUsername;
-    const discordToken = await getToken(code);
+    // const discordToken = await getToken(code);
 
-    if (!discordToken) throw new ValidationError("error validating discord account");
+    // if (!discordToken) throw new ValidationError("error validating discord account");
 
-    const discordUser = await getUser(discordToken.access_token);
+    // const discordUser = await getUser(discordToken.access_token);
 
-    if (!discordUser) throw new ValidationError("could not validate discord account");
+    // if (!discordUser) throw new ValidationError("could not validate discord account");
 
     // Checks database to see if mc username is properly linked with logged in discord account
+
+    // const discordUuid = discordUser.id;
+    const discordUuid = (await Services.user.getUser({ mcUuid: await usernameToUuid(mcUsername) })).discordUuid!;
     return response.send(
         await tokenHandler.generateToken(
-            discordUser.id,
+            discordUuid,
             await getPlayersGuildAsync(mcUsername),
-            await usernameToUuid(mcUsername)
-        )
+            await usernameToUuid(mcUsername),
+        ),
     );
 };
 
@@ -89,7 +92,7 @@ authenticationRouter.post(
     "/token",
     async (
         request: Request<{}, {}, { grantType: string } & (IAuthCodeRequest | IRefreshRequest)>,
-        response: DefaultResponse
+        response: DefaultResponse,
     ) => {
         const grant_type = request.body.grantType;
         if (grant_type === "authorization_code") {
@@ -100,7 +103,7 @@ authenticationRouter.post(
             return refreshToken(request, response);
         }
         throw new ValidationError("Invalid grant type");
-    }
+    },
 );
 
 export default authenticationRouter;

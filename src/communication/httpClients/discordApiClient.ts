@@ -44,7 +44,10 @@ export async function getToken(code: string): Promise<IDiscordTokenResponse | nu
         body: new URLSearchParams(data).toString(),
     });
     if (res.ok) return await res.json();
-    else return null;
+    else {
+        console.warn(res.body, "could not get discord token");
+        return null;
+    }
 }
 
 export async function getUser(token: string): Promise<IDiscordUser | null> {
