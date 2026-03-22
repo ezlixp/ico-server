@@ -34,7 +34,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
                     Promise.all(
                         newRaid.users.map(async (username) => {
                             await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5);
-                        })
+                        }),
                     );
                 });
             } catch (error) {
@@ -58,7 +58,9 @@ const wynnMessagePatterns: IWynnMessage[] = [
         pattern: /^§.(?<giver>.*?)(§.)? rewarded §.an Aspect§. to §.(?<receiver>.*?)(§.)?$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
-            Services.raid.updateRewards(matcher.groups!.receiver, guildId, -1);
+            usernameToUuid(matcher.groups!.receiver).then((uuid) => {
+                Services.raid.updateRewards(uuid, guildId, -1);
+            });
             return matcher.groups!.giver + " has given an aspect to " + matcher.groups!.receiver;
         },
         customHeader: "⚠️ Aspect",
@@ -234,7 +236,7 @@ io.of("/discord").on("connection", (socket) => {
                                 "discord:",
                                 socket.data.discordUuid,
                                 "guild:",
-                                socket.data.wynnGuildId
+                                socket.data.wynnGuildId,
                             );
 
                             let discordUuid: string | undefined;
@@ -251,7 +253,7 @@ io.of("/discord").on("connection", (socket) => {
                                         .replace(new RegExp("§.", "g"), "")
                                         .replace(
                                             ENCODED_DATA_PATTERN,
-                                            (match, _) => `**__${decodeItem(match).name}__**`
+                                            (match, _) => `**__${decodeItem(match).name}__**`,
                                         );
                                     isOnline(header, socket.data.wynnGuildId).then((online) => {
                                         io.of("/discord")
@@ -271,7 +273,7 @@ io.of("/discord").on("connection", (socket) => {
                     ++socket.data.messageIndex;
                 }
             });
-        })
+        }),
     );
 
     /**
@@ -311,7 +313,7 @@ io.of("/discord").on("connection", (socket) => {
                                 "discord:",
                                 socket.data.discordUuid,
                                 "guild:",
-                                socket.data.wynnGuildId
+                                socket.data.wynnGuildId,
                             );
                             const message = rawMessage.replace(new RegExp("§.", "g"), "");
                             io.of("/discord")
@@ -329,7 +331,7 @@ io.of("/discord").on("connection", (socket) => {
                     ++socket.data.hrMessageIndex;
                 }
             });
-        })
+        }),
     );
 
     /**
@@ -348,7 +350,7 @@ io.of("/discord").on("connection", (socket) => {
                 const header = matcher.groups!.header;
                 const message = matcher.groups!.content.replace(
                     ENCODED_DATA_PATTERN,
-                    (match, _) => `<${decodeItem(match).name}>`
+                    (match, _) => `<${decodeItem(match).name}>`,
                 );
                 console.log(message);
                 io.of("/discord")
@@ -368,7 +370,7 @@ io.of("/discord").on("connection", (socket) => {
                         WynnGuildId: socket.data.wynnGuildId,
                     });
             }
-        })
+        }),
     );
 
     /**
@@ -387,14 +389,14 @@ io.of("/discord").on("connection", (socket) => {
                     McUsername: mcUsername,
                     Content: message.Content.replace(/[‌⁤ÁÀ֎]/g, ""),
                 });
-        })
+        }),
     );
 
     socket.on(
         "listOnline",
         errorHandler(async (callback: Function) => {
             callback((await getOnlineUsers(socket.data.wynnGuildId)).map((onlineUser) => onlineUser.McUsername));
-        })
+        }),
     );
 
     socket.on("sync", (ack) => {
@@ -431,7 +433,7 @@ io.of("/discord").on("connection", (socket) => {
                     disconnectTimers[socket.data.discordUuid] = null;
                 }, 10000);
             }
-        })
+        }),
     );
 });
 
