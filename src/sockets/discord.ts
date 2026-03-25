@@ -33,7 +33,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
                     // Add users to db and increase aspect counter by 0.5
                     Promise.all(
                         newRaid.users.map(async (username) => {
-                            await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5);
+                            await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5, 512);
                         }),
                     );
                 });
@@ -58,7 +58,9 @@ const wynnMessagePatterns: IWynnMessage[] = [
         pattern: /^§.(?<giver>.*?)(§.)? rewarded §.an Aspect§. to §.(?<receiver>.*?)(§.)?$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
-            Services.raid.updateRewards(matcher.groups!.receiver, guildId, -1);
+            usernameToUuid(matcher.groups!.receiver).then(async (uuid) => {
+                await Services.raid.updateRewards(uuid, guildId, -1);
+            });
             return matcher.groups!.giver + " has given an aspect to " + matcher.groups!.receiver;
         },
         customHeader: "⚠️ Aspect",
