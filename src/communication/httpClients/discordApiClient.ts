@@ -45,7 +45,7 @@ export async function getToken(code: string): Promise<IDiscordTokenResponse | nu
     });
     if (res.ok) return await res.json();
     else {
-        console.warn(res.body, "could not get discord token");
+        console.warn(res.body, res.headers, "could not get discord token");
         return null;
     }
 }
