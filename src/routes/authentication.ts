@@ -64,11 +64,11 @@ const authorizationCode = async (
 
     const mcUsername = request.body.mcUsername;
     const discordToken = await getToken(code);
-    console.log(discordToken);
 
     if (!discordToken) throw new ValidationError("error validating discord account");
 
     const discordUser = await getUser(discordToken.access_token);
+    console.log(discordUser);
 
     if (!discordUser) throw new ValidationError("could not validate discord account");
 

@@ -69,7 +69,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
         pattern: /^§.(?<giver>.*?)(§.)? rewarded §.a Guild Tome§. to §.(?<receiver>.*?)(§.)?$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
-            Services.tome.deleteFromTomeList(matcher.groups!.receiver, guildId);
+            Services.tome.deleteFromTomeList(matcher.groups!.receiver, guildId).catch(() => {});
             return matcher.groups!.giver + " has given a tome to " + matcher.groups!.receiver;
         },
         customHeader: "⚠️ Tome",
@@ -116,12 +116,18 @@ const hrMessagePatterns: IWynnMessage[] = [
         customHeader: "⚠️ 🤓",
     },
     {
-        pattern: /^(?<content>§.(?<username>.+?)§. \w+ §.(?<deposited>.+?)§. to the Guild Bank \(§.High Ranked§.\))$/,
+        pattern:
+            /^(?<content>§.(?<username>.+?)§. \w+ §.(?<deposited>.+?)§. (to|from) the Guild Bank \(§.High ?Ranked§.\))$/,
         messageType: 1,
         customHeader: "⚠️ Info",
     },
     {
         pattern: /^(?<content>§.A Guild Tome§. has been found and added to the Guild Rewards)$/,
+        messageType: 1,
+        customHeader: "⚠️ Info",
+    },
+    {
+        pattern: /^(?<content>.*)$/,
         messageType: 1,
         customHeader: "⚠️ Info",
     },

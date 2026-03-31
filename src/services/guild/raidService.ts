@@ -53,14 +53,14 @@ export class RaidService {
         mcUuid: string,
         wynnGuildId: string,
         aspects?: number,
-        emeralds?: number
+        emeralds?: number,
     ): Promise<HydratedDocument<IGuildUser>> {
         this.validator.validateGuild(wynnGuildId);
         this.validator.validateUpdateRewards(mcUuid);
 
         return await this.databases[wynnGuildId].GuildUserRepository.updateWithUpsert(
             { mcUuid: mcUuid },
-            { $inc: { aspects: aspects || 0, emeralds: emeralds || 0 } }
+            { $inc: { aspects: aspects || 0, emeralds: emeralds || 0, raids: 1 } },
         );
     }
 
@@ -70,7 +70,7 @@ export class RaidService {
             filter,
             undefined,
             undefined,
-            RaidErrors.NOT_IN_RAID_LIST
+            RaidErrors.NOT_IN_RAID_LIST,
         );
 
         const res: IRaidRewardsResponse = {
@@ -87,7 +87,7 @@ export class RaidService {
         const users = await this.databases[wynnGuildId].GuildUserRepository.find(
             { raids: { $gt: 0 } },
             {},
-            { sort: { raids: "descending" } }
+            { sort: { raids: "descending" } },
         );
         let formattedTopUsers: ILeaderboardUser[] = [];
         // TODO implement mojang api bulk uuid to username call
