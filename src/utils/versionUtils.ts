@@ -2,9 +2,9 @@
  * Defines the minimum allowed mod version in the format:
  * [major, minor, revision, beta]
  */
-const minimumModVersion = [1, 1, 0, 20];
+const minimumModVersion = [1, 1, 0];
 const versionExtractorPattern = new RegExp(
-    "guildapi/(?<major>\\d+).(?<minor>\\d+).(?<revision>\\d+)(-beta.(?<beta>\\d+))?"
+    "guildapi/(?<major>\\d+).(?<minor>\\d+).(?<revision>\\d+)(-beta.(?<beta>\\d+))?",
 );
 
 export interface IModVersionResponse {
