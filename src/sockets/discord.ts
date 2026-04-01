@@ -211,9 +211,8 @@ io.of("/discord").on("connection", (socket) => {
             clearTimeout(disconnectTimers[socket.data.discordUuid]!);
             disconnectTimers[socket.data.discordUuid] = null;
         } else {
-            console.log(socket.data.onlineStatus);
             if (socket.data.onlineStatus !== OnlineStatus.INVISIBLE) {
-                loginMessage;
+                loginMessage(socket);
             }
         }
         socket.join(socket.data.wynnGuildId);
