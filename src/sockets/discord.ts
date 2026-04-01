@@ -8,6 +8,7 @@ import { getChannelFromWynnGuild } from "../utils/serverUtils";
 import { io } from "../socket";
 import Services from "../services/services";
 import { usernameToUuid, uuidToUsername } from "../communication/httpClients/mojangApiClient";
+import { OnlineStatus } from "../constants/onlineStatus";
 
 const ENCODED_DATA_PATTERN = /([\u{F0000}-\u{FFFFD}]|[\u{100000}-\u{10FFFF}])+/gu;
 const wynnMessagePatterns: IWynnMessage[] = [
@@ -183,22 +184,25 @@ io.of("/discord").on("connection", (socket) => {
             clearTimeout(disconnectTimers[socket.data.discordUuid]!);
             disconnectTimers[socket.data.discordUuid] = null;
         } else {
-            getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
-                io.of("/discord")
-                    .to(botId)
-                    .emit("wynnMessage", {
-                        MessageType: 1,
-                        HeaderContent: ["⚠️ Info"],
-                        TextContent: socket.data.username + " logged in!",
-                        ListeningChannel: channel,
-                    });
-            });
+            if (socket.data.onlineStatus !== OnlineStatus.INVISIBLE) {
+                getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
+                    io.of("/discord")
+                        .to(botId)
+                        .emit("wynnMessage", {
+                            MessageType: 1,
+                            HeaderContent: ["⚠️ Info"],
+                            TextContent: socket.data.username + " logged in!",
+                            ListeningChannel: channel,
+                        });
+                });
+            }
         }
         socket.join(socket.data.wynnGuildId);
         console.log(socket.data.username, "joined", socket.data.wynnGuildId);
     }
 
     socket.use((packet, next) => {
+        console.log(packet);
         if (socket.data.muted) {
             return next(new Error("You are muted."));
         }
@@ -402,6 +406,14 @@ io.of("/discord").on("connection", (socket) => {
         }),
     );
 
+    /**
+     * Event that gets fired upon a new online status configuration update
+     */
+    socket.on("onlineStatus", (newStatus: number) => {
+        console.log(socket.data.username, "changed their online status to:", newStatus);
+        socket.data.onlineStatus = newStatus;
+    });
+
     socket.on(
         "listOnline",
         errorHandler(async (callback: Function) => {
@@ -426,7 +438,7 @@ io.of("/discord").on("connection", (socket) => {
                             s.data.messageIndex = messageIndexes[socket.data.wynnGuildId];
                     });
                 });
-            if (socket.data.discordUuid !== "!bot") {
+            if (socket.data.discordUuid !== "!bot" && socket.data.onlineStatus !== OnlineStatus.INVISIBLE) {
                 disconnectTimers[socket.data.discordUuid] = setTimeout(() => {
                     getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
                         getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {

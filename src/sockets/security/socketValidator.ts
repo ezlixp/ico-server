@@ -14,7 +14,7 @@ const secretKey = process.env.JWT_SECRET_KEY!;
  */
 function validateSocket(
     socket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
-    next: (err?: ExtendedError) => void
+    next: (err?: ExtendedError) => void,
 ) {
     const authorizationHeader = socket.handshake.headers.authorization as string;
 
@@ -48,6 +48,7 @@ function validateSocket(
                 }
                 const isMuted = await Services.guildInfo.isUserMuted(socket.data.wynnGuildId, socket.data.discordUuid);
                 socket.data.muted = isMuted;
+                socket.data.onlineStatus = user.onlineStatus;
             } catch (err) {
                 return next(new Error("Something went wrong."));
             }

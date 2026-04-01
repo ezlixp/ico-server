@@ -12,6 +12,7 @@ export interface ClientToServerEvents {
     hrMessage: (MessageChannel: string) => void;
     discordOnlyWynnMessage: (message: string) => void;
     discordMessage: (message: IB2SDiscord2WynnMessage) => void;
+    onlineStatus: (newStatus: number) => void;
     listOnline: (callback: (users: string[]) => void) => void;
     sync: (ack: () => void) => void;
 }
@@ -23,6 +24,7 @@ export interface InterServerEvents {
 export interface SocketData {
     messageIndex: number;
     hrMessageIndex: number;
+    onlineStatus: number;
     wynnGuildId: string;
     username: string;
     modVersion: string;
