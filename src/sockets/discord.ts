@@ -35,7 +35,11 @@ const wynnMessagePatterns: IWynnMessage[] = [
                     // Add users to db and increase aspect counter by 0.5
                     Promise.all(
                         newRaid.users.map(async (username) => {
-                            await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5, 512, 1);
+                            try {
+                                await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5, 512, 1);
+                            } catch (err) {
+                                console.warn("raid complete error:", err);
+                            }
                         }),
                     );
                 });
@@ -220,7 +224,6 @@ io.of("/discord").on("connection", (socket) => {
     }
 
     socket.use((packet, next) => {
-        console.log(packet);
         if (socket.data.muted) {
             return next(new Error("You are muted."));
         }
