@@ -54,13 +54,14 @@ export class RaidService {
         wynnGuildId: string,
         aspects?: number,
         emeralds?: number,
+        raids?: number,
     ): Promise<HydratedDocument<IGuildUser>> {
         this.validator.validateGuild(wynnGuildId);
         this.validator.validateUpdateRewards(mcUuid);
 
         return await this.databases[wynnGuildId].GuildUserRepository.updateWithUpsert(
             { mcUuid: mcUuid },
-            { $inc: { aspects: aspects || 0, emeralds: emeralds || 0, raids: 1 } },
+            { $inc: { aspects: aspects || 0, emeralds: emeralds || 0, raids: raids || 0 } },
         );
     }
 

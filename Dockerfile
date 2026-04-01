@@ -1,14 +1,14 @@
 FROM node:22-slim AS base
-WORKDIR /usr/local/app
+WORKDIR /usr/local/backend
 
 FROM base AS backend-deps
 COPY package*.json ./
-COPY tsconfig.json ./
-COPY src ./src
 RUN npm ci
 
 FROM backend-deps AS backend-build
 COPY .env.* ./
+COPY tsconfig.json ./
+COPY src ./src
 RUN npx tsc
 
 FROM backend-build AS backend-test
@@ -25,7 +25,7 @@ FROM backend-deps AS backend-dev
 CMD ["npm", "run", "dev:docker"]
 
 FROM node:22-slim AS backend-final
-WORKDIR /usr/local/app
+WORKDIR /usr/local/backend
 ENV NODE_ENV=production
 
 COPY --from=backend-prod-deps /usr/local/app/node_modules ./node_modules

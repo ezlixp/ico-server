@@ -35,7 +35,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
                     // Add users to db and increase aspect counter by 0.5
                     Promise.all(
                         newRaid.users.map(async (username) => {
-                            await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5, 512);
+                            await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5, 512, 1);
                         }),
                     );
                 });

@@ -6,10 +6,11 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     if (res.headersSent) next(err);
     if (process.env.NODE_ENV !== "test") console.warn("error from route:", req.originalUrl, "method:", req.method);
     if (err instanceof AppError) {
-        if (process.env.NODE_ENV !== "test") console.error(err.statusCode, err.message);
-
+        if (process.env.NODE_ENV !== "test") {
+            console.error(err.statusCode, err.message);
+            console.warn("DEBUG:", err.debugInfo);
+        }
         res.status(err.statusCode).send(ErrorResponse.createWithError(err));
-        console.warn("DEBUG:", err.debugInfo);
     } else {
         console.error("Unexpected error:", err);
 
