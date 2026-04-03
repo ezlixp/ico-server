@@ -28,7 +28,7 @@ export default async function globalSetup() {
 
     process.env.MONGO_URI = uri.slice(0, uri.lastIndexOf("/"));
 
-    const conn = await mongoose.connect(`${process.env.MONGO_URI}/main`);
+    const conn = await mongoose.connect(process.env.MONGO_URI);
     await conn.connection.db?.dropDatabase();
     await mongoose.disconnect();
 }
