@@ -9,19 +9,19 @@ export interface IRepository<T> {
         filter: FilterQuery<T>,
         projection?: ProjectionType<T>,
         options?: QueryOptions<T>,
-        notFoundMessage?: string
+        notFoundMessage?: string,
     ): Promise<HydratedDocument<T>>;
 
     findOneEmpty(
         filter: FilterQuery<T>,
         projection?: ProjectionType<T>,
-        options?: QueryOptions<T>
+        options?: QueryOptions<T>,
     ): Promise<HydratedDocument<T> | null>;
 
     find(
         filter: FilterQuery<T>,
         projection?: ProjectionType<T>,
-        options?: QueryOptions<T>
+        options?: QueryOptions<T>,
     ): Promise<HydratedDocument<T>[]>;
 
     create(data: Partial<T>): Promise<HydratedDocument<T>>;
@@ -46,7 +46,7 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
         filter: FilterQuery<T> = {},
         projection?: ProjectionType<T>,
         options?: QueryOptions<T>,
-        notFoundMessage?: string
+        notFoundMessage?: string,
     ): Promise<HydratedDocument<T>> {
         try {
             const out = await this.model.findOne(filter, projection, options).exec();
@@ -54,7 +54,7 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
             return out;
         } catch (err) {
             if (err instanceof AppError) throw err;
-            throw new DatabaseError();
+            throw new DatabaseError(err);
         }
     }
 
@@ -67,7 +67,7 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
     async findOneEmpty(
         filter: FilterQuery<T> = {},
         projection?: ProjectionType<T>,
-        options?: QueryOptions<T>
+        options?: QueryOptions<T>,
     ): Promise<HydratedDocument<T> | null> {
         try {
             return await this.model.findOne(filter, projection, options).exec();
@@ -80,12 +80,12 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
     async find(
         filter: FilterQuery<T>,
         projection?: ProjectionType<T>,
-        options?: QueryOptions<T>
+        options?: QueryOptions<T>,
     ): Promise<HydratedDocument<T>[]> {
         try {
             return await this.model.find(filter, projection, options).exec();
         } catch (err) {
-            throw new DatabaseError();
+            throw new DatabaseError(err);
         }
     }
 
@@ -94,7 +94,7 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
             const createdEntity = new this.model(data);
             return await createdEntity.save();
         } catch (err) {
-            throw new DatabaseError();
+            throw new DatabaseError(err);
         }
     }
 
@@ -112,7 +112,7 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
                 .exec();
             return out;
         } catch (err) {
-            throw new DatabaseError();
+            throw new DatabaseError(err);
         }
     }
 
@@ -126,17 +126,17 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
                     context: "query",
                 })
                 .exec();
-            if (!document) throw new DatabaseError();
+            if (!document) throw new DatabaseError("Could not find document to update by ID");
             return document;
         } catch (err) {
-            throw new DatabaseError();
+            throw new DatabaseError(err);
         }
     }
 
     async update(
         options: FilterQuery<T>,
         data: UpdateQuery<T>,
-        notFoundMessage?: string
+        notFoundMessage?: string,
     ): Promise<HydratedDocument<T>> {
         try {
             const out = await this.model
@@ -151,7 +151,7 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
             return out;
         } catch (err) {
             if (err instanceof AppError) throw err;
-            throw new DatabaseError();
+            throw new DatabaseError(err);
         }
     }
 
@@ -159,7 +159,7 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
         try {
             return await this.model.findOneAndDelete(options).exec();
         } catch (err) {
-            throw new DatabaseError();
+            throw new DatabaseError(err);
         }
     }
 }

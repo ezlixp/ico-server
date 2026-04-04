@@ -8,6 +8,8 @@ import { getChannelFromWynnGuild } from "../utils/serverUtils";
 import { io } from "../socket";
 import Services from "../services/services";
 import { usernameToUuid, uuidToUsername } from "../communication/httpClients/mojangApiClient";
+import { OnlineStatus } from "../constants/onlineStatus";
+import { Socket } from "socket.io";
 
 const ENCODED_DATA_PATTERN = /([\u{F0000}-\u{FFFFD}]|[\u{100000}-\u{10FFFF}])+/gu;
 const wynnMessagePatterns: IWynnMessage[] = [
@@ -33,7 +35,11 @@ const wynnMessagePatterns: IWynnMessage[] = [
                     // Add users to db and increase aspect counter by 0.5
                     Promise.all(
                         newRaid.users.map(async (username) => {
-                            await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5, 512);
+                            try {
+                                await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5, 512, 1);
+                            } catch (err) {
+                                console.warn("raid complete error:", err);
+                            }
                         }),
                     );
                 });
@@ -58,8 +64,8 @@ const wynnMessagePatterns: IWynnMessage[] = [
         pattern: /^§.(?<giver>.*?)(§.)? rewarded §.an Aspect§. to §.(?<receiver>.*?)(§.)?$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
-            usernameToUuid(matcher.groups!.receiver).then((uuid) => {
-                Services.raid.updateRewards(uuid, guildId, -1);
+            usernameToUuid(matcher.groups!.receiver).then(async (uuid) => {
+                await Services.raid.updateRewards(uuid, guildId, -1);
             });
             return matcher.groups!.giver + " has given an aspect to " + matcher.groups!.receiver;
         },
@@ -69,7 +75,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
         pattern: /^§.(?<giver>.*?)(§.)? rewarded §.a Guild Tome§. to §.(?<receiver>.*?)(§.)?$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
-            Services.tome.deleteFromTomeList(matcher.groups!.receiver, guildId);
+            Services.tome.deleteFromTomeList(matcher.groups!.receiver, guildId).catch(() => {});
             return matcher.groups!.giver + " has given a tome to " + matcher.groups!.receiver;
         },
         customHeader: "⚠️ Tome",
@@ -116,12 +122,18 @@ const hrMessagePatterns: IWynnMessage[] = [
         customHeader: "⚠️ 🤓",
     },
     {
-        pattern: /^(?<content>§.(?<username>.+?)§. \w+ §.(?<deposited>.+?)§. to the Guild Bank \(§.High Ranked§.\))$/,
+        pattern:
+            /^(?<content>§.(?<username>.+?)§. \w+ §.(?<deposited>.+?)§. (to|from) the Guild Bank \(§.High ?Ranked§.\))$/,
         messageType: 1,
         customHeader: "⚠️ Info",
     },
     {
         pattern: /^(?<content>§.A Guild Tome§. has been found and added to the Guild Rewards)$/,
+        messageType: 1,
+        customHeader: "⚠️ Info",
+    },
+    {
+        pattern: /^(?<content>.*)$/,
         messageType: 1,
         customHeader: "⚠️ Info",
     },
@@ -157,7 +169,41 @@ const errorHandler = (toHandle: Function) => {
     };
 };
 
-// TODO: make middleware for handling mutes
+const loginMessage = (socket: Socket) => {
+    getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
+        io.of("/discord")
+            .to(botId)
+            .emit("wynnMessage", {
+                MessageType: 1,
+                HeaderContent: ["⚠️ Info"],
+                TextContent: socket.data.username + " logged in!",
+                ListeningChannel: channel,
+            });
+    });
+};
+
+const sanitize = (inp: string): string => {
+    return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$0");
+};
+
+const logoutMessage = (socket: Socket) => {
+    getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
+        io.of("/discord")
+            .to(botId)
+            .emit("wynnMessage", {
+                MessageType: 1,
+                HeaderContent: ["⚠️ Info"],
+                TextContent: socket.data.username + " logged out.",
+                ListeningChannel: channel,
+            });
+    });
+};
+
+io.of(/^\/.*/).on("connect", (socket) => {
+    console.log(`New connection attempt:`);
+    console.log(`  Namespace: ${socket.nsp.name}`);
+    console.log(`  Socket ID: ${socket.id}`);
+});
 io.of("/discord").on("connection", (socket) => {
     console.log(socket.data.username, "connected to discord with version:", socket.data.modVersion);
     if (socket.data.wynnGuildId === "*") {
@@ -173,16 +219,9 @@ io.of("/discord").on("connection", (socket) => {
             clearTimeout(disconnectTimers[socket.data.discordUuid]!);
             disconnectTimers[socket.data.discordUuid] = null;
         } else {
-            getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
-                io.of("/discord")
-                    .to(botId)
-                    .emit("wynnMessage", {
-                        MessageType: 1,
-                        HeaderContent: ["⚠️ Info"],
-                        TextContent: socket.data.username + " logged in!",
-                        ListeningChannel: channel,
-                    });
-            });
+            if (socket.data.onlineStatus !== OnlineStatus.INVISIBLE) {
+                loginMessage(socket);
+            }
         }
         socket.join(socket.data.wynnGuildId);
         console.log(socket.data.username, "joined", socket.data.wynnGuildId);
@@ -261,7 +300,7 @@ io.of("/discord").on("connection", (socket) => {
                                             .emit("wynnMessage", {
                                                 MessageType: pattern.messageType,
                                                 HeaderContent: [header + (online ? "*" : ""), discordUuid],
-                                                TextContent: message,
+                                                TextContent: sanitize(message),
                                                 ListeningChannel: channel,
                                             });
                                     });
@@ -321,7 +360,7 @@ io.of("/discord").on("connection", (socket) => {
                                 .emit("wynnMessage", {
                                     MessageType: pattern.messageType,
                                     HeaderContent: [header],
-                                    TextContent: message,
+                                    TextContent: sanitize(message),
                                     ListeningChannel: channel,
                                 });
                             break;
@@ -352,13 +391,13 @@ io.of("/discord").on("connection", (socket) => {
                     ENCODED_DATA_PATTERN,
                     (match, _) => `<${decodeItem(match).name}>`,
                 );
-                console.log(message);
+                console.log(message, "discord only");
                 io.of("/discord")
                     .to(botId)
                     .emit("wynnMessage", {
                         MessageType: 2,
                         HeaderContent: [header, socket.data.discordUuid],
-                        TextContent: message,
+                        TextContent: sanitize(message),
                         ListeningChannel: channel,
                     });
                 io.of("/discord")
@@ -392,6 +431,17 @@ io.of("/discord").on("connection", (socket) => {
         }),
     );
 
+    /**
+     * Event that gets fired upon a new online status configuration update
+     */
+    socket.on("onlineStatus", (newStatus: number) => {
+        console.log(socket.data.username, "changed their online status to:", newStatus);
+        if (newStatus === OnlineStatus.INVISIBLE) logoutMessage(socket);
+        else if (newStatus === OnlineStatus.ONLINE && socket.data.onlineStatus === OnlineStatus.INVISIBLE)
+            loginMessage(socket);
+        socket.data.onlineStatus = newStatus;
+    });
+
     socket.on(
         "listOnline",
         errorHandler(async (callback: Function) => {
@@ -416,20 +466,9 @@ io.of("/discord").on("connection", (socket) => {
                             s.data.messageIndex = messageIndexes[socket.data.wynnGuildId];
                     });
                 });
-            if (socket.data.discordUuid !== "!bot") {
+            if (socket.data.discordUuid !== "!bot" && socket.data.onlineStatus !== OnlineStatus.INVISIBLE) {
                 disconnectTimers[socket.data.discordUuid] = setTimeout(() => {
-                    getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
-                        getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
-                            io.of("/discord")
-                                .to(botId)
-                                .emit("wynnMessage", {
-                                    MessageType: 1,
-                                    HeaderContent: ["⚠️ Info"],
-                                    TextContent: socket.data.username + " logged out.",
-                                    ListeningChannel: channel,
-                                });
-                        });
-                    });
+                    logoutMessage(socket);
                     disconnectTimers[socket.data.discordUuid] = null;
                 }, 10000);
             }

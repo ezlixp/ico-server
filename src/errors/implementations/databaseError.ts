@@ -1,7 +1,8 @@
 ﻿import { AppError } from "../base/appError";
 
 export class DatabaseError extends AppError {
-    constructor() {
-        super("An error has occurred while performing database actions.", 500);
+    constructor(debugInfo?: any) {
+        super("An error has occurred while performing database actions.", 500, debugInfo);
     }
 }
+

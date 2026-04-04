@@ -62,22 +62,22 @@ const authorizationCode = async (
     const code = request.body.code;
     if (code === process.env.JWT_VALIDATION_KEY) return response.send(await tokenHandler.generateAdminToken());
 
+     const code = request.body.code;
+    if (code === process.env.JWT_VALIDATION_KEY) return response.send(await tokenHandler.generateAdminToken());
+
     const mcUsername = request.body.mcUsername;
-    // const discordToken = await getToken(code);
+    const discordToken = await getToken(code);
 
-    // if (!discordToken) throw new ValidationError("error validating discord account");
+    if (!discordToken) throw new ValidationError("error validating discord account");
 
-    // const discordUser = await getUser(discordToken.access_token);
+    const discordUser = await getUser(discordToken.access_token);
 
-    // if (!discordUser) throw new ValidationError("could not validate discord account");
+    if (!discordUser) throw new ValidationError("could not validate discord account");
 
     // Checks database to see if mc username is properly linked with logged in discord account
-
-    // const discordUuid = discordUser.id;
-    const discordUuid = (await Services.user.getUser({ mcUuid: await usernameToUuid(mcUsername) })).discordUuid!;
     return response.send(
         await tokenHandler.generateToken(
-            discordUuid,
+            discordUser.id,
             await getPlayersGuildAsync(mcUsername),
             await usernameToUuid(mcUsername),
         ),

@@ -1,3 +1,4 @@
+import { OnlineStatus } from "../constants/onlineStatus";
 import { io } from "../socket";
 
 export interface IOnlineUser {
@@ -8,7 +9,8 @@ export async function getOnlineUsers(guildId: string): Promise<IOnlineUser[]> {
     const out: IOnlineUser[] = [];
     const sockets = await io.of("/discord").in(guildId).fetchSockets();
     sockets.forEach((socket) => {
-        if (socket.data.username) out.push({ Id: out.length, McUsername: socket.data.username });
+        if (socket.data.username && socket.data.onlineStatus !== OnlineStatus.INVISIBLE)
+            out.push({ Id: out.length, McUsername: socket.data.username });
     });
     return out;
 }

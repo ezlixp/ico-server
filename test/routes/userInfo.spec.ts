@@ -60,7 +60,7 @@ describe("User info routes", () => {
             expect(res2.body).toMatchObject<ErrorResponse>({
                 status: 404,
                 title: "Error",
-                errorMessage: "not found",
+                errorMessage: `Could not GET /api/${API_VERSION}/user/blocked/`,
             });
         });
     });
@@ -163,7 +163,7 @@ describe("User info routes", () => {
             expect(res2.body).toMatchObject<ErrorResponse>({
                 status: 404,
                 title: "Error",
-                errorMessage: "not found",
+                errorMessage: `Could not GET /api/${API_VERSION}/user/onlineStatus/`,
             });
         });
     });
@@ -200,7 +200,7 @@ describe("User info routes", () => {
             expect(res.body).toMatchObject<ErrorResponse>({
                 status: 404,
                 title: "Error",
-                errorMessage: "not found",
+                errorMessage: `Could not POST /api/${API_VERSION}/user/onlineStatus/`,
             });
 
             const res2 = await request

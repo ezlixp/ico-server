@@ -57,7 +57,10 @@ export class JwtTokenHandler {
     }
 
     async generateToken(discordUuid: string, wynnGuildId: IWynnGuild | null, mcUuid?: string): Promise<TokenResponse> {
-        const user = await Services.user.getUser({ discordUuid: discordUuid });
+        const user = await Services.user.getUser({ discordUuid: discordUuid }).catch((err) => {
+            console.warn("gen token user find error:", err);
+            return null;
+        });
 
         this.validateGuild(wynnGuildId);
         this.validateAccount(user, mcUuid);
@@ -73,11 +76,10 @@ export class JwtTokenHandler {
 
     private validateAccount(
         user: HydratedDocument<IUser> | null,
-        mcUuid?: string
+        mcUuid?: string,
     ): asserts user is HydratedDocument<IUser> {
-        if (!user) throw new ValidationError(UserErrors.NOT_FOUND);
+        if (!user || (mcUuid && mcUuid !== user.mcUuid)) throw new ValidationError(UserErrors.NOT_LINKED);
         if (user.banned) throw new ValidationError(UserErrors.BANNED);
-        if (mcUuid && mcUuid !== user.mcUuid) throw new ValidationError(UserErrors.NOT_LINKED);
     }
 
     private signJwtToken(discordUuid: string, guildId: string): TokenResponse {

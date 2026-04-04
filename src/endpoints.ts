@@ -1,4 +1,4 @@
-﻿import { Express, NextFunction, Request, Response } from "express";
+﻿import { Express, NextFunction, Request, Response, Router } from "express";
 import statusRouter from "./routes/status";
 import healthRouter from "./routes/healthCheck";
 import adminRouter from "./routes/admin";
@@ -6,39 +6,41 @@ import modVersionRouter from "./routes/modVersion";
 import userInfoRouter from "./routes/userInfo";
 import infoRouter from "./routes/guildInfo";
 import authenticationRouter from "./routes/authentication";
-import { NotFoundError } from "./errors/implementations/notFoundError";
 import { API_VERSION } from "./config";
 import guildRouter from "./routes/guild/base";
+import { NotFoundError } from "./errors/implementations/notFoundError";
+import { WrongVersionError } from "./errors/implementations/wrongVersionError";
 
 export const mapEndpoints = (app: Express) => {
-    app.use("/api/:version/*extra", (request: Request<{ version: string }>, response: Response, next: NextFunction) => {
-        if (request.params.version !== API_VERSION) {
-            response.status(301).send({ error: `please use /api/${API_VERSION}` });
-            return;
-        }
-        next();
-    });
+    const baseRouter = Router();
 
-    // Map all endpoints that don't require guild id
-    app.use("/", statusRouter);
+    baseRouter.use("/", statusRouter);
+    baseRouter.use("/healthz", healthRouter);
 
-    app.use("/healthz", healthRouter);
+    baseRouter.use(`/auth`, authenticationRouter);
+    baseRouter.use("/admin", adminRouter);
+    baseRouter.use(`/mod`, modVersionRouter);
 
-    app.use("/admin", adminRouter);
+    baseRouter.use(`/user`, userInfoRouter);
+    baseRouter.use(`/config`, infoRouter);
+    baseRouter.use(`/guilds`, guildRouter);
 
-    app.use(`/api/${API_VERSION}/auth`, authenticationRouter);
+    const versionRouter = Router();
 
-    app.use(`/api/${API_VERSION}/mod`, modVersionRouter);
+    versionRouter.use(
+        `/:version`,
+        (request: Request<{ version: string }>, response: Response, next: NextFunction) => {
+            if (request.params.version !== API_VERSION) throw new WrongVersionError();
+            next();
+        },
+        baseRouter,
+    );
 
-    app.use(`/api/${API_VERSION}/user`, userInfoRouter);
-
-    app.use(`/api/${API_VERSION}/config`, infoRouter);
-
-    app.use(`/api/${API_VERSION}/guilds`, guildRouter);
+    app.use("/api", versionRouter);
 
     // Catch all for incorrect routes
-    app.all("*extra", (_: Request) => {
-        throw new NotFoundError("not found");
+    app.all("*extra", (request: Request) => {
+        throw new NotFoundError(`Could not ${request.method} ${request.path}`);
     });
 };
 
