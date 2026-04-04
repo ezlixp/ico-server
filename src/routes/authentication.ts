@@ -61,10 +61,7 @@ const authorizationCode = async (
 ) => {
     const code = request.body.code;
     if (code === process.env.JWT_VALIDATION_KEY) return response.send(await tokenHandler.generateAdminToken());
-
-     const code = request.body.code;
-    if (code === process.env.JWT_VALIDATION_KEY) return response.send(await tokenHandler.generateAdminToken());
-
+    
     const mcUsername = request.body.mcUsername;
     const discordToken = await getToken(code);
 
