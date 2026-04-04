@@ -183,7 +183,7 @@ const loginMessage = (socket: Socket) => {
 };
 
 const sanitize = (inp: string): string => {
-    return inp.replaceAll(/(_|\*|-|~|`|#)/, "\\$0");
+    return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$0");
 };
 
 const logoutMessage = (socket: Socket) => {
