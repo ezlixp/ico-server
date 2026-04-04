@@ -6,7 +6,7 @@ import { getPlayersGuildAsync } from "../communication/httpClients/wynncraftApiC
 import { TokenResponse } from "../communication/responses/tokenResponse";
 import { TokenErrors } from "../errors/messages/tokenErrors";
 import { usernameToUuid } from "../communication/httpClients/mojangApiClient";
-import Services from "../services/services";
+import { getToken, getUser } from "../communication/httpClients/discordApiClient";
 
 /**
  * Maps all authentication-related endpoints. endpoint: .../auth/
@@ -61,7 +61,7 @@ const authorizationCode = async (
 ) => {
     const code = request.body.code;
     if (code === process.env.JWT_VALIDATION_KEY) return response.send(await tokenHandler.generateAdminToken());
-    
+
     const mcUsername = request.body.mcUsername;
     const discordToken = await getToken(code);
 
