@@ -183,7 +183,7 @@ const loginMessage = (socket: Socket) => {
 };
 
 const sanitize = (inp: string): string => {
-    return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$0");
+    return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$1");
 };
 
 const logoutMessage = (socket: Socket) => {
@@ -299,7 +299,7 @@ io.of("/discord").on("connection", (socket) => {
                                             .to(botId)
                                             .emit("wynnMessage", {
                                                 MessageType: pattern.messageType,
-                                                HeaderContent: [header + (online ? "*" : ""), discordUuid],
+                                                HeaderContent: [sanitize(header + (online ? "*" : "")), discordUuid],
                                                 TextContent: sanitize(message),
                                                 ListeningChannel: channel,
                                             });
@@ -359,7 +359,7 @@ io.of("/discord").on("connection", (socket) => {
                                 .to(botId)
                                 .emit("wynnMessage", {
                                     MessageType: pattern.messageType,
-                                    HeaderContent: [header],
+                                    HeaderContent: [sanitize(header), undefined],
                                     TextContent: sanitize(message),
                                     ListeningChannel: channel,
                                 });
@@ -396,7 +396,7 @@ io.of("/discord").on("connection", (socket) => {
                     .to(botId)
                     .emit("wynnMessage", {
                         MessageType: 2,
-                        HeaderContent: [header, socket.data.discordUuid],
+                        HeaderContent: [sanitize(header), socket.data.discordUuid],
                         TextContent: sanitize(message),
                         ListeningChannel: channel,
                     });
