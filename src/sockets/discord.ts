@@ -183,7 +183,7 @@ const loginMessage = (socket: Socket) => {
 };
 
 const sanitize = (inp: string): string => {
-    return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$1");
+    return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$1").replaceAll(/§./g, "");
 };
 
 const logoutMessage = (socket: Socket) => {
@@ -288,19 +288,17 @@ io.of("/discord").on("connection", (socket) => {
                                 })
                                 .catch(() => {})
                                 .finally(() => {
-                                    const message = rawMessage
-                                        .replace(new RegExp("§.", "g"), "")
-                                        .replace(
-                                            ENCODED_DATA_PATTERN,
-                                            (match, _) => `**__${decodeItem(match).name}__**`,
-                                        );
+                                    const message = sanitize(rawMessage).replace(
+                                        ENCODED_DATA_PATTERN,
+                                        (match, _) => `**__${decodeItem(match).name}__**`,
+                                    );
                                     isOnline(header, socket.data.wynnGuildId).then((online) => {
                                         io.of("/discord")
                                             .to(botId)
                                             .emit("wynnMessage", {
                                                 MessageType: pattern.messageType,
-                                                HeaderContent: [sanitize(header + (online ? "*" : "")), discordUuid],
-                                                TextContent: sanitize(message),
+                                                HeaderContent: [sanitize(header) + (online ? "*" : ""), discordUuid],
+                                                TextContent: message,
                                                 ListeningChannel: channel,
                                             });
                                     });
@@ -354,13 +352,12 @@ io.of("/discord").on("connection", (socket) => {
                                 "guild:",
                                 socket.data.wynnGuildId,
                             );
-                            const message = rawMessage.replace(new RegExp("§.", "g"), "");
                             io.of("/discord")
                                 .to(botId)
                                 .emit("wynnMessage", {
                                     MessageType: pattern.messageType,
                                     HeaderContent: [sanitize(header), undefined],
-                                    TextContent: sanitize(message),
+                                    TextContent: sanitize(rawMessage),
                                     ListeningChannel: channel,
                                 });
                             break;
