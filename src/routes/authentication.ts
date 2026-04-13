@@ -6,7 +6,7 @@ import { getPlayersGuildAsync } from "../communication/httpClients/wynncraftApiC
 import { TokenResponse } from "../communication/responses/tokenResponse";
 import { TokenErrors } from "../errors/messages/tokenErrors";
 import { usernameToUuid } from "../communication/httpClients/mojangApiClient";
-import { getToken, getUser } from "../communication/httpClients/discordApiClient";
+import Services from "../services/services";
 
 /**
  * Maps all authentication-related endpoints. endpoint: .../auth/
@@ -63,18 +63,21 @@ const authorizationCode = async (
     if (code === process.env.JWT_VALIDATION_KEY) return response.send(await tokenHandler.generateAdminToken());
 
     const mcUsername = request.body.mcUsername;
-    const discordToken = await getToken(code);
+    const user = await Services.user.getUserByMcUuid(await usernameToUuid(mcUsername));
+    if (!user) throw new ValidationError("error validating discord account");
+    // TODO implement bot command with otp
+    // const discordToken = await getToken(code);
 
-    if (!discordToken) throw new ValidationError("error validating discord account");
+    // if (!discordToken) throw new ValidationError("error validating discord account");
 
-    const discordUser = await getUser(discordToken.access_token);
+    // const discordUser = await getUser(discordToken.access_token);
 
-    if (!discordUser) throw new ValidationError("could not validate discord account");
+    // if (!discordUser) throw new ValidationError("could not validate discord account");
 
     // Checks database to see if mc username is properly linked with logged in discord account
     return response.send(
         await tokenHandler.generateToken(
-            discordUser.id,
+            user.discordUuid,
             await getPlayersGuildAsync(mcUsername),
             await usernameToUuid(mcUsername),
         ),
