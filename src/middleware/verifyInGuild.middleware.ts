@@ -11,7 +11,7 @@ import { NotFoundError } from "../errors/implementations/notFoundError";
 export default async function verifyInGuild(
     request: GuildRequest<{}, {}, { mcUsername: string } & any>,
     response: Response,
-    next: NextFunction
+    next: NextFunction,
 ) {
     if (request.params.wynnGuildId === "**" || request.params.wynnGuildId === "*") return next();
     if (!request.body.mcUsername) throw new MissingFieldError("mcUsername", typeof "_");
@@ -31,4 +31,3 @@ export default async function verifyInGuild(
     if (await checkIfPlayerIsInGuildAsync(mcUsername, wynnGuildId)) next();
     else throw new GuildVerificationError("User not in the guild.");
 }
-

@@ -13,7 +13,10 @@ import { Socket } from "socket.io";
 
 const ENCODED_DATA_PATTERN = /([\u{F0000}-\u{FFFFD}]|[\u{100000}-\u{10FFFF}])+/gu;
 const wynnMessagePatterns: IWynnMessage[] = [
-    { pattern: /^.*§[38](?<header>[^ ]+?)(§[38])?:§[b8] (?<content>.*)$/, messageType: 0 },
+    {
+        pattern: /^.*§[38](?<header>[^ ]+?)(§[38])?:§[b8] (?<content>.*)$/,
+        messageType: 0,
+    },
     {
         pattern:
             /^§[e8](?<player1>.*?)§[b8], §[e8](?<player2>.*?)§[b8], §[e8](?<player3>.*?)§[b8], and §[e8](?<player4>.*?)§[b8] finished §[38](?<raid>.*?)§[b8].*$/,
@@ -472,4 +475,3 @@ io.of("/discord").on("connection", (socket) => {
         }),
     );
 });
-

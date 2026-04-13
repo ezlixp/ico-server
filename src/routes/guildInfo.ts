@@ -38,7 +38,9 @@ guildInfoRouter.get("/", async (request: InfoRequest, response: DefaultResponse<
 });
 
 guildInfoRouter.delete("/", async (request: InfoRequest, response: DefaultResponse) => {
-    await Services.guildInfo.deleteGuild({ discordGuildId: request.params.discordGuildId });
+    await Services.guildInfo.deleteGuild({
+        discordGuildId: request.params.discordGuildId,
+    });
     response.status(204).send();
 });
 
@@ -67,4 +69,3 @@ guildInfoRouter.delete(
 );
 
 export default infoRouter;
-

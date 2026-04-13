@@ -37,14 +37,19 @@ export class TomeService {
 
     async getTomeListPosition(
         mcUsername: FilterQuery<ITome>,
-        wynnGuildId: string
+        wynnGuildId: string,
     ): Promise<{ mcUsername: string; position: number }> {
         this.validator.validateGuild(wynnGuildId);
         const repository = this.getRepository(wynnGuildId);
         const tome = await repository.findOne(mcUsername);
         this.validator.validateGet(tome);
 
-        const position = (await repository.find({ dateAdded: { $lt: tome.dateAdded.getTime() } })).length + 1;
+        const position =
+            (
+                await repository.find({
+                    dateAdded: { $lt: tome.dateAdded.getTime() },
+                })
+            ).length + 1;
         return { mcUsername: tome.mcUsername, position: position };
     }
 
@@ -80,4 +85,3 @@ class TomeServiceValidator extends BaseGuildServiceValidator {
         }
     }
 }
-

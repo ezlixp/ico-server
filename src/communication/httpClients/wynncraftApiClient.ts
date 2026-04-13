@@ -30,4 +30,3 @@ export default async function checkIfPlayerIsInGuildAsync(username: string, wynn
 
     return guild != null && guild.uuid == wynnGuildId;
 }
-

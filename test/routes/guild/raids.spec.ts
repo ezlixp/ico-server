@@ -100,9 +100,24 @@ describe("Raids routes", () => {
                 .get(`/api/${API_VERSION}/guilds/raids/rewards/b250f587-ab5e-48cd-bf90-71e65d6dc9e7`)
                 .expect(200);
             expect(res.body).toEqual([
-                { mcUsername: "1", raids: 1500, aspects: 69, liquidEmeralds: 1 },
-                { mcUsername: "2", raids: 1500, aspects: 0, liquidEmeralds: expect.closeTo(0.999755859375) },
-                { mcUsername: "4", raids: 2000, aspects: 0.5, liquidEmeralds: 2 },
+                {
+                    mcUsername: "1",
+                    raids: 1500,
+                    aspects: 69,
+                    liquidEmeralds: 1,
+                },
+                {
+                    mcUsername: "2",
+                    raids: 1500,
+                    aspects: 0,
+                    liquidEmeralds: expect.closeTo(0.999755859375),
+                },
+                {
+                    mcUsername: "4",
+                    raids: 2000,
+                    aspects: 0.5,
+                    liquidEmeralds: 2,
+                },
             ]);
         });
 
@@ -131,7 +146,7 @@ describe("Raids routes", () => {
                     aspects: 69,
                     emeralds: 4096,
                     raids: 1500,
-                })
+                }),
             );
             res = await request
                 .post(`/api/${API_VERSION}/guilds/raids/rewards/b250f587-ab5e-48cd-bf90-71e65d6dc9e7`)
@@ -148,7 +163,7 @@ describe("Raids routes", () => {
                     aspects: 70,
                     emeralds: 4095,
                     raids: 1500,
-                })
+                }),
             );
             res = await request
                 .post(`/api/${API_VERSION}/guilds/raids/rewards/b250f587-ab5e-48cd-bf90-71e65d6dc9e7`)
@@ -164,7 +179,7 @@ describe("Raids routes", () => {
                     aspects: 70,
                     emeralds: 4093.5,
                     raids: 1500,
-                })
+                }),
             );
             res = await request
                 .post(`/api/${API_VERSION}/guilds/raids/rewards/b250f587-ab5e-48cd-bf90-71e65d6dc9e7`)
@@ -180,7 +195,7 @@ describe("Raids routes", () => {
                     aspects: 71.5,
                     emeralds: 4093.5,
                     raids: 1500,
-                })
+                }),
             );
         });
 
@@ -312,4 +327,3 @@ describe("Raids routes", () => {
         });
     });
 });
-

@@ -22,7 +22,10 @@ export class GuildInfoService {
     }
 
     public async createNewGuild(
-        guildRequest: { discordGuildId: string; wynnGuildId: string } & Partial<IGuildInfo>,
+        guildRequest: {
+            discordGuildId: string;
+            wynnGuildId: string;
+        } & Partial<IGuildInfo>,
     ): Promise<HydratedDocument<IGuildInfo>> {
         await this.checkDuplicateGuild(guildRequest.discordGuildId, guildRequest.wynnGuildId);
 
@@ -58,7 +61,12 @@ export class GuildInfoService {
             { discordGuildId: discordGuildId },
             {
                 ...rest,
-                ...{ $addToSet: { privilegedRoles: { $each: privilegedRoles }, mutedUuids: { $each: mutedUuids } } },
+                ...{
+                    $addToSet: {
+                        privilegedRoles: { $each: privilegedRoles },
+                        mutedUuids: { $each: mutedUuids },
+                    },
+                },
             },
             GuildErrors.NOT_CONFIGURED,
         );
@@ -107,4 +115,3 @@ class GuildInfoServiceValidator {
         if (!guild) throw new NotFoundError(GuildErrors.NOT_DELETED);
     }
 }
-

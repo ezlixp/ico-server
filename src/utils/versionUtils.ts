@@ -36,10 +36,12 @@ export async function getLatestVersion(): Promise<IModVersionResponse | null> {
     try {
         const response = await fetch(url);
         const res = await response.json();
-        return { versionNumber: res[0].version_number, download: res[0].files[0].url };
+        return {
+            versionNumber: res[0].version_number,
+            download: res[0].files[0].url,
+        };
     } catch (error) {
         console.error("get version error:", error);
     }
     return null;
 }
-

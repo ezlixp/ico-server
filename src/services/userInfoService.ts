@@ -52,7 +52,9 @@ export class UserInfoService {
         const user = await this.repository.find({ mcUuid: options.mcUuid });
         this.validator.validateGetEmpty(user);
 
-        const get = await this.repository.findOneEmpty({ discordUuid: options.discordUuid });
+        const get = await this.repository.findOneEmpty({
+            discordUuid: options.discordUuid,
+        });
         this.validator.validateNewLink(get);
 
         return this.repository.updateWithUpsert({ discordUuid: options.discordUuid }, options);
@@ -96,7 +98,7 @@ class UserInfoServiceValidator {
     }
 
     validateNewLink(
-        user: HydratedDocument<IUser> | null
+        user: HydratedDocument<IUser> | null,
     ): asserts user is null | (HydratedDocument<IUser> & { mcUuid: "" }) {
         if (user !== null && user.mcUuid !== "") throw new ValidationError(UserErrors.DC_ALREADY_LINKED);
     }
@@ -126,4 +128,3 @@ class UserInfoServiceValidator {
         }
     }
 }
-

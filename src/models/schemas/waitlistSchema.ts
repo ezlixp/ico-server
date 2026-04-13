@@ -11,7 +11,7 @@ const waitlistSchema: Schema<IWaitlist> = new Schema(
         mcUsername: { type: String, required: true },
         dateAdded: { type: Date, required: true, default: Date.now },
     },
-    { collation: { locale: "en", strength: 2 } }
+    { collation: { locale: "en", strength: 2 } },
 );
 
 export default waitlistSchema;

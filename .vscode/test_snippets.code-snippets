@@ -6,14 +6,14 @@
             "\tit(\"should ${3:description}\", async () => {",
             "\t\tconst res = await request.${1/(.*)/${1:/downcase}/}(`/api/\\${API_VERSION}/$2`).expect(200)$0",
             "\t})",
-            "})"
+            "})",
         ],
-        "scope": "typescript"
+        "scope": "typescript",
     },
 
     "ico server id": {
         "prefix": "ico",
-        "body": "\"b250f587-ab5e-48cd-bf90-71e65d6dc9e7\""
+        "body": "\"b250f587-ab5e-48cd-bf90-71e65d6dc9e7\"",
     },
 
     "guild not configured object": {
@@ -23,10 +23,10 @@
             "\tstatus: 404,",
             "\ttitle: \"Error\",",
             "\terrorMessage: GuildErrors.NOT_CONFIGURED,",
-            "});"
+            "});",
         ],
-        "scope": "typescript"
-    }
+        "scope": "typescript",
+    },
 
     // Place your ico_server workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and
     // description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope
@@ -45,4 +45,3 @@
     // 	"description": "Log output to console"
     // }
 }
-

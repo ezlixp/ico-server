@@ -45,10 +45,9 @@ const userSchema: Schema<IUser> = new Schema(
     },
     {
         collation: { locale: "en", strength: 2 },
-    }
+    },
 );
 
 const UserModel: Model<IUser> = mongoose.model("User", userSchema);
 
 export default UserModel;
-

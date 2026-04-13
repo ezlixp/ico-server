@@ -31,4 +31,3 @@ export interface SocketData {
     discordUuid: string;
     muted: boolean;
 }
-

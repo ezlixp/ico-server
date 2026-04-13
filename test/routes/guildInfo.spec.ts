@@ -283,4 +283,3 @@ describe("Guild info routes", () => {
         });
     });
 });
-

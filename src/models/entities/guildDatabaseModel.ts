@@ -20,4 +20,3 @@ export const guildIds: { [key: string]: string } = {};
 export const guildNames: { [key: string]: string } = {};
 
 export const guildDatabases: IGuildDatabases = {};
-

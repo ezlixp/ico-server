@@ -48,4 +48,3 @@ export interface IWynn2DiscordMessage {
     TextContent: string;
     ListeningChannel: string;
 }
-

@@ -61,7 +61,13 @@ export class RaidService {
 
         return await this.databases[wynnGuildId].GuildUserRepository.updateWithUpsert(
             { mcUuid: mcUuid },
-            { $inc: { aspects: aspects || 0, emeralds: emeralds || 0, raids: raids || 0 } },
+            {
+                $inc: {
+                    aspects: aspects || 0,
+                    emeralds: emeralds || 0,
+                    raids: raids || 0,
+                },
+            },
         );
     }
 
@@ -111,4 +117,3 @@ class RaidServiceValidator extends BaseGuildServiceValidator {
         if (typeof mcUuid !== "string") throw new MissingFieldError("mcUuid", "string");
     }
 }
-

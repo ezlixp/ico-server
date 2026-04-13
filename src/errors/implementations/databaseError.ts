@@ -5,4 +5,3 @@ export class DatabaseError extends AppError {
         super("An error has occurred while performing database actions.", 500, debugInfo);
     }
 }
-

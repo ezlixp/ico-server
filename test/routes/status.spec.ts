@@ -7,4 +7,3 @@ describe("HEAD /", () => {
         expect(res.status).toBe(200);
     });
 });
-

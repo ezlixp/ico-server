@@ -22,10 +22,12 @@ userInfoRouter.get(
     validateJwtToken,
     async (request: Request<{ mcUuid: string }>, response: DefaultResponse<string[]>) => {
         const mcUuid = request.params.mcUuid.replaceAll("-", "");
-        const blockedList = await Services.user.getBlockedList({ mcUuid: mcUuid });
+        const blockedList = await Services.user.getBlockedList({
+            mcUuid: mcUuid,
+        });
 
         response.status(200).send(blockedList);
-    }
+    },
 );
 
 userInfoRouter.post(
@@ -37,7 +39,7 @@ userInfoRouter.post(
         const updatedUser = await Services.user.addToBlockedList({ mcUuid: uuid }, toBlock);
 
         response.status(200).send(updatedUser);
-    }
+    },
 );
 
 userInfoRouter.delete(
@@ -50,7 +52,7 @@ userInfoRouter.delete(
         const updatedUser = await Services.user.removeFromBlockedList({ mcUuid: uuid }, toRemove);
 
         response.send(updatedUser);
-    }
+    },
 );
 
 userInfoRouter.get(
@@ -59,7 +61,7 @@ userInfoRouter.get(
     async (request: Request<{ mcUuid: string }>, response: DefaultResponse<number>) => {
         const uuid = request.params.mcUuid.replaceAll("-", "");
         response.send((await Services.user.getUser({ mcUuid: uuid })).onlineStatus);
-    }
+    },
 );
 
 userInfoRouter.post(
@@ -69,11 +71,11 @@ userInfoRouter.post(
         const uuid = request.params.mcUuid.replaceAll("-", "");
         const updatedUser = await Services.user.updateUser(
             { mcUuid: uuid },
-            { onlineStatus: request.body.onlineStatus }
+            { onlineStatus: request.body.onlineStatus },
         );
 
         response.send(updatedUser);
-    }
+    },
 );
 
 userInfoRouter.post(
@@ -82,15 +84,15 @@ userInfoRouter.post(
     validateAdminJwtToken,
     async (
         request: GuildRequest<{}, {}, { mcUsername: string; discordUuid: string }>,
-        response: DefaultResponse<HydratedDocument<IUser>>
+        response: DefaultResponse<HydratedDocument<IUser>>,
     ) => {
         response.status(200).send(
             await Services.user.linkUser({
                 discordUuid: request.body.discordUuid,
                 mcUuid: request.body.mcUsername ? await usernameToUuid(request.body.mcUsername) : "",
-            })
+            }),
         );
-    }
+    },
 );
 
 userInfoRouter.post(
@@ -99,10 +101,12 @@ userInfoRouter.post(
     async (request: Request<{ discordUuid: string }, {}, { banned: boolean }>, response: DefaultResponse) => {
         if (request.body.banned) kickUser(request.params.discordUuid);
         response.send(
-            await Services.user.updateUser({ discordUuid: request.params.discordUuid }, { banned: request.body.banned })
+            await Services.user.updateUser(
+                { discordUuid: request.params.discordUuid },
+                { banned: request.body.banned },
+            ),
         );
-    }
+    },
 );
 
 export default userInfoRouter;
-

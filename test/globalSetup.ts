@@ -32,4 +32,3 @@ export default async function globalSetup() {
     await conn.connection.db?.dropDatabase();
     await mongoose.disconnect();
 }
-
