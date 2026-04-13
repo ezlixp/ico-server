@@ -16,7 +16,7 @@ const secretKey = process.env.JWT_SECRET_KEY as string;
 function validateJwtToken(
     request: Request<{ wynnGuildId?: string; mcUuid?: string; discordUuid?: string } & any>,
     response: Response,
-    next: NextFunction
+    next: NextFunction,
 ) {
     const authorizationHeader = request.headers["authorization"] as string | undefined;
 
@@ -46,14 +46,18 @@ function validateJwtToken(
                 }
                 next();
             } else {
-                Services.user.getUser({ mcUuid: request.params.mcUuid?.replaceAll("-", "") }).then((val) => {
-                    if (val.discordUuid !== p.discordUuid) next(new ValidationError(TokenErrors.UNPRIVILEGED_TOKEN));
-                    else next();
-                });
+                Services.user
+                    .getUser({
+                        mcUuid: request.params.mcUuid?.replaceAll("-", ""),
+                    })
+                    .then((val) => {
+                        if (val.discordUuid !== p.discordUuid)
+                            next(new ValidationError(TokenErrors.UNPRIVILEGED_TOKEN));
+                        else next();
+                    });
             }
         } else next(); // Goes to next step (function execution)
     });
 }
 
 export default validateJwtToken;
-

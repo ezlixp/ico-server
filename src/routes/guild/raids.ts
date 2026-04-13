@@ -20,7 +20,7 @@ raidRouter.get(
     "/rewards/:wynnGuildId",
     async (request: GuildRequest, response: DefaultResponse<IRaidRewardsResponse[]>) => {
         response.send(await Services.raid.getRewards(request.params.wynnGuildId));
-    }
+    },
 );
 
 raidRouter.post(
@@ -28,17 +28,17 @@ raidRouter.post(
     validateAdminJwtToken,
     async (
         request: GuildRequest<{}, {}, { mcUsername: string; aspects?: number; emeralds?: number }>,
-        response: DefaultResponse<IGuildUser>
+        response: DefaultResponse<IGuildUser>,
     ) => {
         response.send(
             await Services.raid.updateRewards(
                 await usernameToUuid(request.body.mcUsername),
                 request.params.wynnGuildId,
                 request.body.aspects,
-                request.body.emeralds
-            )
+                request.body.emeralds,
+            ),
         );
-    }
+    },
 );
 
 raidRouter.get(
@@ -47,18 +47,17 @@ raidRouter.get(
         response.send(
             await Services.raid.getUserRewards(
                 { mcUuid: await usernameToUuid(request.params.mcUsername) },
-                request.params.wynnGuildId
-            )
+                request.params.wynnGuildId,
+            ),
         );
-    }
+    },
 );
 
 raidRouter.get(
     "/leaderboard/:wynnGuildId",
     async (request: GuildRequest, response: DefaultResponse<ILeaderboardUser[]>) => {
         response.send(await Services.raid.getRaidsLeaderboard(request.params.wynnGuildId));
-    }
+    },
 );
 
 export default raidRouter;
-

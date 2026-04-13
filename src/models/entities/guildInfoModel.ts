@@ -43,7 +43,7 @@ export class GuildInfoImpl implements IGuildInfo {
             mutedUuids = [],
             listeningChannel = "0",
             broadcastingChannel = "0",
-        }: Partial<IGuildInfoOptionals> = {}
+        }: Partial<IGuildInfoOptionals> = {},
     ) {
         this.wynnGuildId = wynnGuildId;
         this.wynnGuildName = wynnGuildName;
@@ -113,4 +113,3 @@ const guildInfoSchema: Schema<IGuildInfo> = new Schema({
 const GuildInfoModel = mongoose.model("Guild Info", guildInfoSchema);
 
 export default GuildInfoModel;
-

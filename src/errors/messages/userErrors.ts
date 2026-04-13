@@ -9,4 +9,3 @@
     static DC_ALREADY_LINKED = "Provided discord account already linked.";
     static BANNED = "You have been banned from accessing this resource.";
 }
-

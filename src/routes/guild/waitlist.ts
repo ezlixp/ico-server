@@ -19,7 +19,7 @@ waitlistRouter.post(
     validateJwtToken,
     async (request: GuildRequest<{}, {}, { mcUsername: string }>, response: DefaultResponse<IWaitlist>) => {
         response.send(await Services.waitlist.addToWaitlist(request.body.mcUsername, request.params.wynnGuildId));
-    }
+    },
 );
 
 waitlistRouter.delete(
@@ -28,8 +28,7 @@ waitlistRouter.delete(
     async (request: GuildRequest<{ mcUsername: string }>, response: DefaultResponse) => {
         await Services.waitlist.removeFromWaitlist(request.params.mcUsername, request.params.wynnGuildId);
         response.send();
-    }
+    },
 );
 
 export default waitlistRouter;
-

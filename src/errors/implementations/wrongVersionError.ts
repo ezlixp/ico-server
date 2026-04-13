@@ -7,4 +7,3 @@ export class WrongVersionError extends AppError {
         super(`Please use /api/${API_VERSION}`, 301);
     }
 }
-

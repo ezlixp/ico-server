@@ -4,4 +4,3 @@ export const OnlineStatus = {
     DND: 2,
     INVISIBLE: 3,
 };
-

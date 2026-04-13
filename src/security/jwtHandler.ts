@@ -45,7 +45,9 @@ export class JwtTokenHandler {
                 return await this.generateAdminToken();
             }
 
-            const user = await Services.user.getUser({ discordUuid: p.discordUuid });
+            const user = await Services.user.getUser({
+                discordUuid: p.discordUuid,
+            });
 
             if (user.refreshToken !== refreshToken) {
                 throw new ValidationError(TokenErrors.INVALID_REFRESH);
@@ -94,4 +96,3 @@ export class JwtTokenHandler {
         return response;
     }
 }
-

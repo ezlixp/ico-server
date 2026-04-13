@@ -10,4 +10,3 @@
         Object.setPrototypeOf(this, AppError.prototype);
     }
 }
-

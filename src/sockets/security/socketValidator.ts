@@ -60,4 +60,3 @@ function validateSocket(
 }
 
 export default validateSocket;
-

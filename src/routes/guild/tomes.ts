@@ -23,22 +23,22 @@ tomeRouter.post(
     verifyInGuild,
     async (request: GuildRequest<{}, {}, { mcUsername: string }>, response: DefaultResponse<ITome>) => {
         response.send(await Services.tome.addToTomeList(request.body.mcUsername, request.params.wynnGuildId));
-    }
+    },
 );
 
 tomeRouter.get(
     "/:wynnGuildId/:mcUsername",
     async (
         request: GuildRequest<{ mcUsername: string }>,
-        response: DefaultResponse<{ mcUsername: string; position: number }>
+        response: DefaultResponse<{ mcUsername: string; position: number }>,
     ) => {
         response.send(
             await Services.tome.getTomeListPosition(
                 { mcUsername: request.params.mcUsername },
-                request.params.wynnGuildId
-            )
+                request.params.wynnGuildId,
+            ),
         );
-    }
+    },
 );
 
 tomeRouter.delete(
@@ -47,8 +47,7 @@ tomeRouter.delete(
     async (request: GuildRequest<{ mcUsername: string }>, response: DefaultResponse) => {
         await Services.tome.deleteFromTomeList(request.params.mcUsername, request.params.wynnGuildId);
         response.status(204).send();
-    }
+    },
 );
 
 export default tomeRouter;
-

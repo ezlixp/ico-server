@@ -11,7 +11,7 @@ const tomeSchema: Schema<ITome> = new Schema(
         mcUsername: { type: String, required: true },
         dateAdded: { type: Date, required: true, default: Date.now },
     },
-    { collation: { locale: "en", strength: 2 } }
+    { collation: { locale: "en", strength: 2 } },
 );
 
 export default tomeSchema;

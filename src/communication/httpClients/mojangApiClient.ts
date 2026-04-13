@@ -4,7 +4,9 @@ import { HttpClientError } from "../../errors/implementations/httpClientError";
 const usernameUuidMap: { [key: string]: { uuid: string; timestamp: number } } = {};
 
 /** Caches UUID to username conversions from Mojang api.*/
-const uuidUsernameMap: { [key: string]: { username: string; timestamp: number } } = {};
+const uuidUsernameMap: {
+    [key: string]: { username: string; timestamp: number };
+} = {};
 
 export async function usernameToUuid(username: string): Promise<string> {
     if (usernameUuidMap[username] && Date.now() - usernameUuidMap[username].timestamp < 1.728e9) {
@@ -24,8 +26,14 @@ export async function usernameToUuid(username: string): Promise<string> {
         throw new HttpClientError(responseBody.errorMessage);
     }
 
-    uuidUsernameMap[responseBody.id] = { username: username, timestamp: Date.now() };
-    usernameUuidMap[username] = { uuid: responseBody.id, timestamp: Date.now() };
+    uuidUsernameMap[responseBody.id] = {
+        username: username,
+        timestamp: Date.now(),
+    };
+    usernameUuidMap[username] = {
+        uuid: responseBody.id,
+        timestamp: Date.now(),
+    };
     return responseBody.id;
 }
 
@@ -48,8 +56,10 @@ export async function uuidToUsername(uuid: string): Promise<string> {
         throw new HttpClientError(responseBody.errorMessage);
     }
 
-    uuidUsernameMap[uuid] = { username: responseBody.name, timestamp: Date.now() };
+    uuidUsernameMap[uuid] = {
+        username: responseBody.name,
+        timestamp: Date.now(),
+    };
     usernameUuidMap[responseBody.name] = { uuid: uuid, timestamp: Date.now() };
     return responseBody.name;
 }
-

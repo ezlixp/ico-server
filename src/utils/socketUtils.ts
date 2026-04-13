@@ -33,4 +33,3 @@ export async function setMuteUser(discordUuid: string, muted: boolean) {
         if (socket.data.discordUuid === discordUuid) socket.data.muted = muted;
     });
 }
-

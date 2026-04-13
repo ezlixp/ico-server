@@ -59,4 +59,3 @@ export async function getUser(token: string): Promise<IDiscordUser | null> {
     if (res.ok) return await res.json();
     else return null;
 }
-

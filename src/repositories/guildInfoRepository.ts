@@ -9,7 +9,9 @@ export class GuildInfoRepository extends BaseRepository<IGuildInfo> {
 
     async guildExists(discordGuildId: string, wynnGuildId: string): Promise<boolean> {
         try {
-            await super.findOne({ $or: [{ wynnGuildId: wynnGuildId }, { discordGuildId: discordGuildId }] });
+            await super.findOne({
+                $or: [{ wynnGuildId: wynnGuildId }, { discordGuildId: discordGuildId }],
+            });
         } catch (err) {
             if (err instanceof AppError && err.statusCode === 404) return false;
         }
@@ -20,4 +22,3 @@ export class GuildInfoRepository extends BaseRepository<IGuildInfo> {
         return await super.find({});
     }
 }
-

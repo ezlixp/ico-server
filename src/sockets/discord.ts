@@ -13,7 +13,10 @@ import { Socket } from "socket.io";
 
 const ENCODED_DATA_PATTERN = /([\u{F0000}-\u{FFFFD}]|[\u{100000}-\u{10FFFF}])+/gu;
 const wynnMessagePatterns: IWynnMessage[] = [
-    { pattern: /^.*§[38](?<header>[^ ]+?)(§[38])?:§[b8] (?<content>.*)$/, messageType: 0 },
+    {
+        pattern: /^.*§[38](?<header>[^ ]+?)(§[38])?:§[b8] (?<content>.*)$/,
+        messageType: 0,
+    },
     {
         pattern:
             /^§[e8](?<player1>.*?)§[b8], §[e8](?<player2>.*?)§[b8], §[e8](?<player3>.*?)§[b8], and §[e8](?<player4>.*?)§[b8] finished §[38](?<raid>.*?)§[b8].*$/,
@@ -183,7 +186,7 @@ const loginMessage = (socket: Socket) => {
 };
 
 const sanitize = (inp: string): string => {
-    return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$1");
+    return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$1").replaceAll(/§./g, "");
 };
 
 const logoutMessage = (socket: Socket) => {
@@ -288,19 +291,17 @@ io.of("/discord").on("connection", (socket) => {
                                 })
                                 .catch(() => {})
                                 .finally(() => {
-                                    const message = rawMessage
-                                        .replace(new RegExp("§.", "g"), "")
-                                        .replace(
-                                            ENCODED_DATA_PATTERN,
-                                            (match, _) => `**__${decodeItem(match).name}__**`,
-                                        );
+                                    const message = sanitize(rawMessage).replace(
+                                        ENCODED_DATA_PATTERN,
+                                        (match, _) => `**__${decodeItem(match).name}__**`,
+                                    );
                                     isOnline(header, socket.data.wynnGuildId).then((online) => {
                                         io.of("/discord")
                                             .to(botId)
                                             .emit("wynnMessage", {
                                                 MessageType: pattern.messageType,
-                                                HeaderContent: [sanitize(header + (online ? "*" : "")), discordUuid],
-                                                TextContent: sanitize(message),
+                                                HeaderContent: [sanitize(header) + (online ? "*" : ""), discordUuid],
+                                                TextContent: message,
                                                 ListeningChannel: channel,
                                             });
                                     });
@@ -354,13 +355,12 @@ io.of("/discord").on("connection", (socket) => {
                                 "guild:",
                                 socket.data.wynnGuildId,
                             );
-                            const message = rawMessage.replace(new RegExp("§.", "g"), "");
                             io.of("/discord")
                                 .to(botId)
                                 .emit("wynnMessage", {
                                     MessageType: pattern.messageType,
                                     HeaderContent: [sanitize(header), undefined],
-                                    TextContent: sanitize(message),
+                                    TextContent: sanitize(rawMessage),
                                     ListeningChannel: channel,
                                 });
                             break;
@@ -475,4 +475,3 @@ io.of("/discord").on("connection", (socket) => {
         }),
     );
 });
-

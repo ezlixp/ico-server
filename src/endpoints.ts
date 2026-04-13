@@ -43,4 +43,3 @@ export const mapEndpoints = (app: Express) => {
         throw new NotFoundError(`Could not ${request.method} ${request.path}`);
     });
 };
-

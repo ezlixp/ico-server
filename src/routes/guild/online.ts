@@ -13,4 +13,3 @@ onlineRouter.get("/:wynnGuildId", async (request: GuildRequest, response: Defaul
 });
 
 export default onlineRouter;
-

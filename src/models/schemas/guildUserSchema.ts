@@ -16,8 +16,7 @@ const guildUserSchema: Schema<IGuildUser> = new Schema(
         emeralds: { type: Number, required: true, default: 0 },
         raids: { type: Number, required: true, default: 0 },
     },
-    { collation: { locale: "en", strength: 2 } }
+    { collation: { locale: "en", strength: 2 } },
 );
 
 export default guildUserSchema;
-

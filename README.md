@@ -18,4 +18,3 @@ Thanks for checking out my little project!
 ## License
 
 [LGPL v3.0](LICENSE)
-

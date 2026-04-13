@@ -56,4 +56,3 @@ class WaitlistServiceValidator extends BaseGuildServiceValidator {
         }
     }
 }
-

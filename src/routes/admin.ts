@@ -28,4 +28,3 @@ adminRouter.post(
 );
 
 export default adminRouter;
-

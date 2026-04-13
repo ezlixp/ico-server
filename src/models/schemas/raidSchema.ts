@@ -26,4 +26,3 @@ const raidSchema: Schema<IRaid> = new Schema({
 });
 
 export default raidSchema;
-

@@ -17,4 +17,3 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
         res.status(500).send(HttpErrorResponse.InternalServerError);
     }
 };
-

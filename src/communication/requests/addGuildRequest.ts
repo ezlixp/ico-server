@@ -3,4 +3,3 @@
     wynnGuildName: string;
     discordGuildId: string;
 }
-
