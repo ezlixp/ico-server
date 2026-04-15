@@ -29,6 +29,8 @@ export interface IWynnMessage {
 export interface IB2SDiscord2WynnMessage {
     DiscordUsername: string;
     DiscordUuid: string;
+    ReplyAuthor: string | null;
+    ReplyContent: string | null;
     Content: string;
     WynnGuildId: string;
 }
@@ -37,6 +39,8 @@ export interface IB2SDiscord2WynnMessage {
 export interface IS2CDiscord2WynnMessage {
     DiscordUsername: string;
     McUsername?: string;
+    ReplyAuthor: string | null;
+    ReplyContent: string | null;
     Content: string;
     WynnGuildId: string;
 }
