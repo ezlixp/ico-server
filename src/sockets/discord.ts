@@ -405,6 +405,8 @@ io.of("/discord").on("connection", (socket) => {
                     .emit("discordMessage", {
                         DiscordUsername: "@none",
                         McUsername: header as string,
+                        ReplyAuthor: null,
+                        ReplyContent: null,
                         Content: message.replace(/[‌⁤ÁÀ֎]/g, "") as string,
                         WynnGuildId: socket.data.wynnGuildId,
                     });
