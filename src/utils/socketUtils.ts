@@ -4,6 +4,7 @@ export interface IOnlineUser {
     Id: number;
     McUsername: string;
 }
+// in the future, make invisible hide from online list but right now i need to make sure there aren't socket disconnection bugs
 export async function getOnlineUsers(guildId: string): Promise<IOnlineUser[]> {
     const out: IOnlineUser[] = [];
     const sockets = await io.of("/discord").in(guildId).fetchSockets();
