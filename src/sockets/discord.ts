@@ -12,14 +12,17 @@ import { OnlineStatus } from "../constants/onlineStatus";
 import { Socket } from "socket.io";
 
 const ENCODED_DATA_PATTERN = /([\u{F0000}-\u{FFFFD}]|[\u{100000}-\u{10FFFF}])+/gu;
+/** Named groups header and content are taken if they exist for the message sent to discord,
+ * if no custom message/custom header function is defined.
+ */
 const wynnMessagePatterns: IWynnMessage[] = [
     {
-        pattern: /^.*§[38](?<header>[^ ]+?)(§[38])?:§[b8] (?<content>.*)$/,
+        pattern: /^(?<pill>.*)§[38](?<header>.+?)(§[38])?:§[b8] (?<content>.*)$/,
         messageType: 0,
     },
     {
         pattern:
-            /^§[e8](?<player1>.*?)§[b8], §[e8](?<player2>.*?)§[b8], §[e8](?<player3>.*?)§[b8], and §[e8](?<player4>.*?)§[b8] finished §[38](?<raid>.*?)§[b8].*$/,
+            /^§[e8](?<player1>.*?)§[b8], §[e8](?<player2>.*?)§[b8], ?§[e8](?<player3>.*?)§[b8], ?and ?§[e8](?<player4>.*?)§[b8] ?finished ?§[38](?<raid>.*?)§[b8].*$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
             try {
@@ -64,7 +67,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
         customHeader: "⚠️ Guild Raida",
     },
     {
-        pattern: /^§.(?<giver>.*?)(§.)? rewarded §.an Aspect§. to §.(?<receiver>.*?)(§.)?$/,
+        pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.an ?Aspect§. ?to ?§.(?<receiver>\S*?)(§.)?$`/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
             usernameToUuid(matcher.groups!.receiver).then(async (uuid) => {
@@ -75,7 +78,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
         customHeader: "⚠️ Aspect",
     },
     {
-        pattern: /^§.(?<giver>.*?)(§.)? rewarded §.a Guild Tome§. to §.(?<receiver>.*?)(§.)?$/,
+        pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.a Guild ?Tome§. ?to ?§.(?<receiver>\S*?)(§.)?$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
             Services.tome.deleteFromTomeList(matcher.groups!.receiver, guildId).catch(() => {});
@@ -84,7 +87,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
         customHeader: "⚠️ Tome",
     },
     {
-        pattern: /^§.(?<giver>.*?)(§.)? rewarded §.1024 Emeralds§. to §.(?<receiver>.*?)(§.)?$/,
+        pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.1024 ?Emeralds§. ?to ?§.(?<receiver>\S*?)(§.)?$/,
         messageType: 1,
         customMessage: (matcher) => matcher.groups!.giver + " has given a 1024 emeralds to " + matcher.groups!.receiver,
         customHeader: "⚠️ 🤑",
@@ -94,18 +97,18 @@ const wynnMessagePatterns: IWynnMessage[] = [
 const hrMessagePatterns: IWynnMessage[] = [
     {
         pattern:
-            /^(?<content>§.(?<username>.+?)§. set §.(?<bonus>.+?)§. to level §.(?<level>.+?)§. on §.(?<territory>.*))$/,
+            /^(?<content>§.(?<username>\S+?)§. set §.(?<bonus>\S+?)§. to level §.(?<level>\S+?)§. on §.(?<territory>\S*))$/,
         messageType: 1,
         customHeader: "⚠️ 🤓",
     },
     {
-        pattern: /^(?<content>§.(?<username>.+?)§. removed §.(?<changed>.+?)§. from §.(?<territory>.*))$/,
+        pattern: /^§.(?<username>\S+?)§. removed §.(?<changed>.+?)§. from §.(?<territory>.*)$/,
         messageType: 1,
         customHeader: "⚠️ 🤓",
     },
 
     {
-        pattern: /^(?<content>§.(?<username>.+?)§. changed §.\d+ \w+§. on §3(?<territory>.*))$/,
+        pattern: /^(?<content>§.(?<username>\S+?)§. changed §.(?<amount>\d+) (?<changed>\w+)§. on §3(?<territory>.*))$/,
         messageType: 1,
         customHeader: "⚠️ 🤓",
     },
@@ -126,7 +129,7 @@ const hrMessagePatterns: IWynnMessage[] = [
     },
     {
         pattern:
-            /^(?<content>§.(?<username>.+?)§. \w+ §.(?<deposited>.+?)§. (to|from) the Guild Bank \(§.High ?Ranked§.\))$/,
+            /^(?<content>§.(?<username>\S+?)§. (?<action>\w+) §.(?<item>.+?)§. (?:to|from) ?the ?Guild ?Bank ?\(§.High ?Ranked§.\))$/,
         messageType: 1,
         customHeader: "⚠️ Info",
     },
