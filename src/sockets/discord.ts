@@ -25,33 +25,33 @@ const wynnMessagePatterns: IWynnMessage[] = [
             /^§[e8](?<player1>.*?)§[b8], §[e8](?<player2>.*?)§[b8], ?§[e8](?<player3>.*?)§[b8], ?and ?§[e8](?<player4>.*?)§[b8] ?finished ?§[38](?<raid>.*?)§[b8].*$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
-            try {
-                const users = [
-                    matcher.groups!.player1,
-                    matcher.groups!.player2,
-                    matcher.groups!.player3,
-                    matcher.groups!.player4,
-                ];
-                const raid = matcher.groups!.raid;
+            const users = [
+                matcher.groups!.player1,
+                matcher.groups!.player2,
+                matcher.groups!.player3,
+                matcher.groups!.player4,
+            ];
+            const raid = matcher.groups!.raid;
 
-                guildDatabases[guildId].RaidRepository.create({
-                    users: users,
-                    raid,
-                }).then((newRaid) => {
+            guildDatabases[guildId].RaidRepository.create({
+                users: users,
+                raid,
+            })
+                .then((newRaid) => {
                     // Add users to db and increase aspect counter by 0.5
                     Promise.all(
                         newRaid.users.map(async (username) => {
                             try {
                                 await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5, 512, 1);
                             } catch (err) {
-                                console.warn("raid complete error:", err);
+                                console.error("raid complete error:", err);
                             }
                         }),
                     );
+                })
+                .catch((error) => {
+                    console.error("log raid error:", error);
                 });
-            } catch (error) {
-                console.error("postRaidError:", error);
-            }
             return (
                 matcher.groups!.player1 +
                 ", " +
@@ -70,9 +70,13 @@ const wynnMessagePatterns: IWynnMessage[] = [
         pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.an ?Aspect§. ?to ?§.(?<receiver>\S*?)(§.)?$`/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
-            usernameToUuid(matcher.groups!.receiver).then(async (uuid) => {
-                await Services.raid.updateRewards(uuid, guildId, -1);
-            });
+            usernameToUuid(matcher.groups!.receiver)
+                .then(async (uuid) => {
+                    await Services.raid.updateRewards(uuid, guildId, -1);
+                })
+                .catch((error) => {
+                    console.error("aspect reward error:", error);
+                });
             return matcher.groups!.giver + " has given an aspect to " + matcher.groups!.receiver;
         },
         customHeader: "⚠️ Aspect",
@@ -81,7 +85,9 @@ const wynnMessagePatterns: IWynnMessage[] = [
         pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.a Guild ?Tome§. ?to ?§.(?<receiver>\S*?)(§.)?$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
-            Services.tome.deleteFromTomeList(matcher.groups!.receiver, guildId).catch(() => {});
+            Services.tome.deleteFromTomeList(matcher.groups!.receiver, guildId).catch((error) => {
+                console.error("tome reward error:", error);
+            });
             return matcher.groups!.giver + " has given a tome to " + matcher.groups!.receiver;
         },
         customHeader: "⚠️ Tome",
@@ -159,18 +165,18 @@ export function registerMessageIndexes() {
 }
 
 let botId = "";
-const errorHandler = (toHandle: Function) => {
-    const handleError = (error: Error) => {
-        console.error("socket error:", error);
-    };
+const handleError = (error: Error, event: string) => {
+    console.error("socket error on event", event, "with error:", error);
+};
+const errorHandler = (event: string, toHandle: Function) => {
     return (...args: unknown[]) => {
         try {
             const ret = toHandle.apply(this, args);
             if (ret && typeof ret.catch === "function") {
-                ret.catch(handleError);
+                ret.catch((error: Error) => handleError(error, event));
             }
         } catch (e: any) {
-            handleError(e);
+            handleError(e, event);
         }
     };
 };
@@ -249,7 +255,7 @@ io.of("/discord").on("connection", (socket) => {
      */
     socket.on(
         "wynnMessage",
-        errorHandler((message: string) => {
+        errorHandler("wynnMessage", (message: string) => {
             if (!checkVersion(socket.data.modVersion)) {
                 console.log(`skipping request from outdated mod version: ${socket.data.modVersion}`);
                 return;
@@ -324,55 +330,57 @@ io.of("/discord").on("connection", (socket) => {
      */
     socket.on(
         "hrMessage",
-        errorHandler((message: string) => {
+        errorHandler("hrMessage", (message: string) => {
             if (!checkVersion(socket.data.modVersion)) {
                 console.log(`skipping request from outdated mod version: ${socket.data.modVersion}`);
                 return;
             }
-            getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
-                if (channel === "none") {
-                    console.log("no channel set up for:", socket.data.wynnGuildId);
-                    return;
-                }
-
-                if (socket.data.hrMessageIndex === hrMessageIndexes[socket.data.wynnGuildId]) {
-                    ++socket.data.hrMessageIndex;
-                    ++hrMessageIndexes[socket.data.wynnGuildId];
-                    for (let i = 0; i < hrMessagePatterns.length; i++) {
-                        const pattern = hrMessagePatterns[i];
-                        const matcher = pattern.pattern.exec(message);
-                        if (matcher) {
-                            const header = pattern.customHeader ? pattern.customHeader : matcher.groups!.header;
-                            const rawMessage = pattern.customMessage
-                                ? pattern.customMessage(matcher, socket.data.wynnGuildId)
-                                : matcher.groups!.content;
-                            console.log(
-                                "hr",
-                                header,
-                                rawMessage,
-                                hrMessageIndexes[socket.data.wynnGuildId],
-                                "emitted by:",
-                                socket.data.username,
-                                "discord:",
-                                socket.data.discordUuid,
-                                "guild:",
-                                socket.data.wynnGuildId,
-                            );
-                            io.of("/discord")
-                                .to(botId)
-                                .emit("wynnMessage", {
-                                    MessageType: pattern.messageType,
-                                    HeaderContent: [sanitize(header), undefined],
-                                    TextContent: sanitize(rawMessage),
-                                    ListeningChannel: channel,
-                                });
-                            break;
-                        }
+            getChannelFromWynnGuild(socket.data.wynnGuildId)
+                .then((channel) => {
+                    if (channel === "none") {
+                        console.log("no channel set up for:", socket.data.wynnGuildId);
+                        return;
                     }
-                } else {
-                    ++socket.data.hrMessageIndex;
-                }
-            });
+
+                    if (socket.data.hrMessageIndex === hrMessageIndexes[socket.data.wynnGuildId]) {
+                        ++socket.data.hrMessageIndex;
+                        ++hrMessageIndexes[socket.data.wynnGuildId];
+                        for (let i = 0; i < hrMessagePatterns.length; i++) {
+                            const pattern = hrMessagePatterns[i];
+                            const matcher = pattern.pattern.exec(message);
+                            if (matcher) {
+                                const header = pattern.customHeader ? pattern.customHeader : matcher.groups!.header;
+                                const rawMessage = pattern.customMessage
+                                    ? pattern.customMessage(matcher, socket.data.wynnGuildId)
+                                    : matcher.groups!.content;
+                                console.log(
+                                    "hr",
+                                    header,
+                                    rawMessage,
+                                    hrMessageIndexes[socket.data.wynnGuildId],
+                                    "emitted by:",
+                                    socket.data.username,
+                                    "discord:",
+                                    socket.data.discordUuid,
+                                    "guild:",
+                                    socket.data.wynnGuildId,
+                                );
+                                io.of("/discord")
+                                    .to(botId)
+                                    .emit("wynnMessage", {
+                                        MessageType: pattern.messageType,
+                                        HeaderContent: [sanitize(header), undefined],
+                                        TextContent: sanitize(rawMessage),
+                                        ListeningChannel: channel,
+                                    });
+                                break;
+                            }
+                        }
+                    } else {
+                        ++socket.data.hrMessageIndex;
+                    }
+                })
+                .catch((error) => handleError(error, "hrMessage"));
         }),
     );
 
@@ -381,7 +389,7 @@ io.of("/discord").on("connection", (socket) => {
      */
     socket.on(
         "discordOnlyWynnMessage",
-        errorHandler(async (message: string) => {
+        errorHandler("discordOnlyWynnMessage", async (message: string) => {
             const channel = await getChannelFromWynnGuild(socket.data.wynnGuildId);
             if (channel === "none") {
                 console.log("no channel set up for:", socket.data.wynnGuildId);
@@ -422,7 +430,7 @@ io.of("/discord").on("connection", (socket) => {
      */
     socket.on(
         "discordMessage",
-        errorHandler(async (message: IB2SDiscord2WynnMessage) => {
+        errorHandler("discordMessage", async (message: IB2SDiscord2WynnMessage) => {
             const mcUuid = (await Services.user.getUserByDiscord(message.DiscordUuid))?.mcUuid;
             const mcUsername = mcUuid ? await uuidToUsername(mcUuid) : undefined;
             console.log(message, "mcusername: ", mcUsername);
@@ -449,7 +457,7 @@ io.of("/discord").on("connection", (socket) => {
 
     socket.on(
         "listOnline",
-        errorHandler(async (callback: Function) => {
+        errorHandler("listOnline", async (callback: Function) => {
             callback((await getOnlineUsers(socket.data.wynnGuildId)).map((onlineUser) => onlineUser.McUsername));
         }),
     );
@@ -461,7 +469,7 @@ io.of("/discord").on("connection", (socket) => {
 
     socket.on(
         "disconnect",
-        errorHandler((reason: string) => {
+        errorHandler("disconnect", (reason: string) => {
             console.log(socket.data.username, "disconnected with reason:", reason);
             io.of("/discord")
                 .fetchSockets()
