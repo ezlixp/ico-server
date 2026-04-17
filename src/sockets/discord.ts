@@ -260,68 +260,75 @@ io.of("/discord").on("connection", (socket) => {
                 console.log(`skipping request from outdated mod version: ${socket.data.modVersion}`);
                 return;
             }
-            getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
-                if (channel === "none") {
-                    console.log("no channel set up for:", socket.data.wynnGuildId);
-                    return;
-                }
-
-                if (socket.data.messageIndex === messageIndexes[socket.data.wynnGuildId]) {
-                    ++socket.data.messageIndex;
-                    ++messageIndexes[socket.data.wynnGuildId];
-                    io.of("/discord").to(socket.data.wynnGuildId).emit("wynnMirror", message);
-                    for (let i = 0; i < wynnMessagePatterns.length; i++) {
-                        const pattern = wynnMessagePatterns[i];
-                        const matcher = pattern.pattern.exec(message);
-                        if (matcher) {
-                            const header = pattern.customHeader ? pattern.customHeader : matcher.groups!.header;
-                            const rawMessage = pattern.customMessage
-                                ? pattern.customMessage(matcher, socket.data.wynnGuildId)
-                                : matcher.groups!.content;
-                            console.log(
-                                header,
-                                rawMessage,
-                                messageIndexes[socket.data.wynnGuildId],
-                                "emitted by:",
-                                socket.data.username,
-                                "discord:",
-                                socket.data.discordUuid,
-                                "guild:",
-                                socket.data.wynnGuildId,
-                            );
-
-                            let discordUuid: string | undefined;
-                            usernameToUuid(header)
-                                .then(async (uuid) => {
-                                    try {
-                                        const user = await Services.user.getUserByMcUuid(uuid);
-                                        discordUuid = user?.discordUuid;
-                                    } catch {}
-                                })
-                                .catch(() => {})
-                                .finally(() => {
-                                    const message = sanitize(rawMessage).replace(
-                                        ENCODED_DATA_PATTERN,
-                                        (match, _) => `**__${decodeItem(match).name}__**`,
-                                    );
-                                    isOnline(header, socket.data.wynnGuildId).then((online) => {
-                                        io.of("/discord")
-                                            .to(botId)
-                                            .emit("wynnMessage", {
-                                                MessageType: pattern.messageType,
-                                                HeaderContent: [sanitize(header) + (online ? "*" : ""), discordUuid],
-                                                TextContent: message,
-                                                ListeningChannel: channel,
-                                            });
-                                    });
-                                });
-                            break;
-                        }
+            getChannelFromWynnGuild(socket.data.wynnGuildId)
+                .then((channel) => {
+                    if (channel === "none") {
+                        console.log("no channel set up for:", socket.data.wynnGuildId);
+                        return;
                     }
-                } else {
-                    ++socket.data.messageIndex;
-                }
-            });
+
+                    if (socket.data.messageIndex === messageIndexes[socket.data.wynnGuildId]) {
+                        ++socket.data.messageIndex;
+                        ++messageIndexes[socket.data.wynnGuildId];
+                        io.of("/discord").to(socket.data.wynnGuildId).emit("wynnMirror", message);
+                        for (let i = 0; i < wynnMessagePatterns.length; i++) {
+                            const pattern = wynnMessagePatterns[i];
+                            const matcher = pattern.pattern.exec(message);
+                            if (matcher) {
+                                const header = pattern.customHeader ? pattern.customHeader : matcher.groups!.header;
+                                const rawMessage = pattern.customMessage
+                                    ? pattern.customMessage(matcher, socket.data.wynnGuildId)
+                                    : matcher.groups!.content;
+                                console.log(
+                                    header,
+                                    rawMessage,
+                                    messageIndexes[socket.data.wynnGuildId],
+                                    "emitted by:",
+                                    socket.data.username,
+                                    "discord:",
+                                    socket.data.discordUuid,
+                                    "guild:",
+                                    socket.data.wynnGuildId,
+                                );
+
+                                let discordUuid: string | undefined;
+                                usernameToUuid(header)
+                                    .then(async (uuid) => {
+                                        try {
+                                            const user = await Services.user.getUserByMcUuid(uuid);
+                                            discordUuid = user?.discordUuid;
+                                        } catch {}
+                                    })
+                                    .catch(() => {})
+                                    .finally(() => {
+                                        const message = sanitize(rawMessage).replace(
+                                            ENCODED_DATA_PATTERN,
+                                            (match, _) => `**__${decodeItem(match).name}__**`,
+                                        );
+                                        isOnline(header, socket.data.wynnGuildId).then((online) => {
+                                            io.of("/discord")
+                                                .to(botId)
+                                                .emit("wynnMessage", {
+                                                    MessageType: pattern.messageType,
+                                                    HeaderContent: [
+                                                        sanitize(header) + (online ? "*" : ""),
+                                                        discordUuid,
+                                                    ],
+                                                    TextContent: message,
+                                                    ListeningChannel: channel,
+                                                });
+                                        });
+                                    });
+                                break;
+                            }
+                        }
+                    } else {
+                        ++socket.data.messageIndex;
+                    }
+                })
+                .catch((error) => {
+                    handleError(error, "wynnMessage");
+                });
         }),
     );
 
