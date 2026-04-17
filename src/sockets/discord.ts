@@ -67,7 +67,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
         customHeader: "⚠️ Guild Raida",
     },
     {
-        pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.an ?Aspect§. ?to ?§.(?<receiver>\S*?)(§.)?$`/,
+        pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.an ?Aspect§. ?to ?§.(?<receiver>\S*?)(§.)?$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
             usernameToUuid(matcher.groups!.receiver)
