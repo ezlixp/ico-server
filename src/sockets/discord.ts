@@ -181,34 +181,42 @@ const errorHandler = (event: string, toHandle: Function) => {
     };
 };
 
-const loginMessage = (socket: Socket) => {
-    getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
-        io.of("/discord")
-            .to(botId)
-            .emit("wynnMessage", {
-                MessageType: 1,
-                HeaderContent: ["⚠️ Info"],
-                TextContent: socket.data.username + " logged in!",
-                ListeningChannel: channel,
-            });
-    });
-};
-
 const sanitize = (inp: string): string => {
     return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$1").replaceAll(/§./g, "");
 };
 
+const loginMessage = (socket: Socket) => {
+    getChannelFromWynnGuild(socket.data.wynnGuildId)
+        .then((channel) => {
+            io.of("/discord")
+                .to(botId)
+                .emit("wynnMessage", {
+                    MessageType: 1,
+                    HeaderContent: ["⚠️ Info"],
+                    TextContent: socket.data.username + " logged in!",
+                    ListeningChannel: channel,
+                });
+        })
+        .catch((error) => {
+            handleError(error, "loginMessageSend");
+        });
+};
+
 const logoutMessage = (socket: Socket) => {
-    getChannelFromWynnGuild(socket.data.wynnGuildId).then((channel) => {
-        io.of("/discord")
-            .to(botId)
-            .emit("wynnMessage", {
-                MessageType: 1,
-                HeaderContent: ["⚠️ Info"],
-                TextContent: socket.data.username + " logged out.",
-                ListeningChannel: channel,
-            });
-    });
+    getChannelFromWynnGuild(socket.data.wynnGuildId)
+        .then((channel) => {
+            io.of("/discord")
+                .to(botId)
+                .emit("wynnMessage", {
+                    MessageType: 1,
+                    HeaderContent: ["⚠️ Info"],
+                    TextContent: socket.data.username + " logged out.",
+                    ListeningChannel: channel,
+                });
+        })
+        .catch((error) => {
+            handleError(error, "logoutMessageSend");
+        });
 };
 
 io.of(/^\/.*/).on("connect", (socket) => {
