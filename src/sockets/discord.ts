@@ -240,6 +240,7 @@ io.of("/discord").on("connection", (socket) => {
     }
 
     socket.use((packet, next) => {
+        console.log(packet);
         if (socket.data.muted) {
             return next(new Error("You are muted."));
         }
