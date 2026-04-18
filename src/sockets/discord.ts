@@ -135,7 +135,7 @@ const hrMessagePatterns: IWynnMessage[] = [
     },
     {
         pattern:
-            /^(?<content>§.(?<username>\S+?)§. (?<action>\w+) §.(?<item>.+?)§. (?:to|from) ?the ?Guild ?Bank ?\(§.High ?Ranked§.\))$/,
+            /^(?<content>§.(?<username>\S+?)§. (?<action>\w+) §.(?<item>.+?)§. ?(?:to|from) ?the ?Guild ?Bank ?\(§.High ?Ranked§.\))$/,
         messageType: 1,
         customHeader: "⚠️ Info",
     },
