@@ -7,10 +7,16 @@ import { registerMessageIndexes } from "./sockets/discord";
 
 mongoose.Schema.Types.String.checkRequired((v) => typeof v === "string");
 
-process.on("SIGTERM", async () => {
+process.on("SIGTERM", () => {
     console.log("shutting down...");
     server.close();
-    await mongoose.disconnect();
+    mongoose.disconnect();
+    process.exit(0);
+});
+process.on("SIGINT", () => {
+    console.log("shutting down...");
+    server.close();
+    mongoose.disconnect();
     process.exit(0);
 });
 // Connect to database

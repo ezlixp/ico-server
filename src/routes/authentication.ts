@@ -95,13 +95,15 @@ authenticationRouter.post(
         request: Request<{}, {}, { grantType: string } & (IAuthCodeRequest | IRefreshRequest)>,
         response: DefaultResponse,
     ) => {
+        console.log(request.originalUrl, request.body);
+
         const grant_type = request.body.grantType;
         if (grant_type === "authorization_code") {
             authCodeRequestValidator(request);
-            return authorizationCode(request, response);
+            return await authorizationCode(request, response);
         } else if (grant_type === "refresh_token") {
             refreshRequestValidator(request);
-            return refreshToken(request, response);
+            return await refreshToken(request, response);
         }
         throw new ValidationError("Invalid grant type");
     },

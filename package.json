@@ -6,7 +6,7 @@
     "scripts": {
         "test": "cross-env NODE_ENV=test jest --detectOpenHandles --noStackTrace",
         "dev": "cross-env NODE_ENV=development tsx --watch src/index.ts",
-        "dev:docker": "nodemon src/index.ts"
+        "dev:docker": "nodemon --delay 200ms --ext 'ts,json' --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'"
     },
     "author": "",
     "license": "LGPL-3.0-only",

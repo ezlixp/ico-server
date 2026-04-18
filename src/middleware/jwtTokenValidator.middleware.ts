@@ -54,6 +54,10 @@ function validateJwtToken(
                         if (val.discordUuid !== p.discordUuid)
                             next(new ValidationError(TokenErrors.UNPRIVILEGED_TOKEN));
                         else next();
+                    })
+                    .catch((error) => {
+                        console.warn("jwt validation error:", error);
+                        next(new ValidationError(TokenErrors.UNPRIVILEGED_TOKEN));
                     });
             }
         } else next(); // Goes to next step (function execution)

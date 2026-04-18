@@ -22,6 +22,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 
 
 FROM backend-deps AS backend-dev
+EXPOSE 9229
 CMD ["npm", "run", "dev:docker"]
 
 FROM node:22-slim AS backend-final
