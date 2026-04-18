@@ -50,7 +50,11 @@ export abstract class BaseRepository<T extends BaseModel> implements IRepository
     ): Promise<HydratedDocument<T>> {
         try {
             const out = await this.model.findOne(filter, projection, options).exec();
-            if (!out) throw new NotFoundError(notFoundMessage || "Selected resource could not be found.");
+            if (!out)
+                throw new NotFoundError(
+                    notFoundMessage || "Selected resource could not be found.",
+                    JSON.stringify(filter),
+                );
             return out;
         } catch (err) {
             if (err instanceof AppError) throw err;
