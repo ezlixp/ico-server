@@ -217,7 +217,13 @@ io.of(/^\/.*/).on("connect", (socket) => {
     console.log(`  Socket ID: ${socket.id}`);
 });
 io.of("/discord").on("connection", (socket) => {
-    console.log(socket.data.username, "connected to discord with version:", socket.data.modVersion);
+    console.log(
+        socket.data.username,
+        "connected to discord with version:",
+        socket.data.modVersion,
+        "discord:",
+        socket.data.discordUuid,
+    );
     if (socket.data.wynnGuildId === "*") {
         botId = socket.id;
     } else {
