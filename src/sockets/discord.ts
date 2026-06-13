@@ -10,7 +10,7 @@ import Services from "../services/services";
 import { usernameToUuid, uuidToUsername } from "../communication/httpClients/mojangApiClient";
 import { OnlineStatus } from "../constants/onlineStatus";
 import { Socket } from "socket.io";
-import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData } from "../types/socketIOTypes";
+import { SocketData } from "../types/socketIOTypes";
 
 const ENCODED_DATA_PATTERN = /([\u{F0000}-\u{FFFFD}]|[\u{100000}-\u{10FFFF}])+/gu;
 /** Named groups header and content are taken if they exist for the message sent to discord,
@@ -237,7 +237,7 @@ const logoutMessage = (socket: Socket) => {
 export const getMessage = async (
     message: string,
     channel: string,
-    socket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+    socketData: SocketData,
 ): Promise<IWynn2DiscordMessage | null> => {
     for (let i = 0; i < wynnMessagePatterns.length; i++) {
         const pattern = wynnMessagePatterns[i];
@@ -245,18 +245,18 @@ export const getMessage = async (
         if (matcher) {
             const header = pattern.customHeader ? pattern.customHeader : matcher.groups!.header;
             const rawMessage = pattern.customMessage
-                ? pattern.customMessage(matcher, socket.data.wynnGuildId)
+                ? pattern.customMessage(matcher, socketData.wynnGuildId)
                 : matcher.groups!.content;
             console.log(
                 header,
                 rawMessage,
-                messageIndexes[socket.data.wynnGuildId],
+                messageIndexes[socketData.wynnGuildId],
                 "emitted by:",
-                socket.data.username,
+                socketData.username,
                 "discord:",
-                socket.data.discordUuid,
+                socketData.discordUuid,
                 "guild:",
-                socket.data.wynnGuildId,
+                socketData.wynnGuildId,
             );
 
             let discordUuid: string | undefined;
@@ -269,7 +269,7 @@ export const getMessage = async (
                 ENCODED_DATA_PATTERN,
                 (match, _) => `**__${decodeItem(match).name}__**`,
             );
-            const online = await isOnline(header, socket.data.wynnGuildId);
+            const online = await isOnline(header, socketData.wynnGuildId);
             return {
                 MessageType: pattern.messageType,
                 HeaderContent: [sanitize(header) + (online ? "*" : ""), discordUuid],
@@ -283,7 +283,7 @@ export const getMessage = async (
 export const getHrMessage = async (
     message: string,
     channel: string,
-    socket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+    socketData: SocketData,
 ): Promise<IWynn2DiscordMessage | null> => {
     for (let i = 0; i < hrMessagePatterns.length; i++) {
         const pattern = hrMessagePatterns[i];
@@ -291,19 +291,19 @@ export const getHrMessage = async (
         if (matcher) {
             const header = pattern.customHeader ? pattern.customHeader : matcher.groups!.header;
             const rawMessage = pattern.customMessage
-                ? pattern.customMessage(matcher, socket.data.wynnGuildId)
+                ? pattern.customMessage(matcher, socketData.wynnGuildId)
                 : matcher.groups!.content;
             console.log(
                 "hr",
                 header,
                 rawMessage,
-                hrMessageIndexes[socket.data.wynnGuildId],
+                hrMessageIndexes[socketData.wynnGuildId],
                 "emitted by:",
-                socket.data.username,
+                socketData.username,
                 "discord:",
-                socket.data.discordUuid,
+                socketData.discordUuid,
                 "guild:",
-                socket.data.wynnGuildId,
+                socketData.wynnGuildId,
             );
             return {
                 MessageType: pattern.messageType,
@@ -383,7 +383,7 @@ io.of("/discord").on("connection", (socket) => {
                         ++socket.data.messageIndex;
                         ++messageIndexes[socket.data.wynnGuildId];
                         io.of("/discord").to(socket.data.wynnGuildId).emit("wynnMirror", message);
-                        getMessage(message, channel, socket).then((out) => {
+                        getMessage(message, channel, socket.data).then((out) => {
                             io.of("/discord").to(botId).emit("wynnMessage", out!);
                         });
                     } else {
@@ -417,7 +417,7 @@ io.of("/discord").on("connection", (socket) => {
                     if (socket.data.hrMessageIndex === hrMessageIndexes[socket.data.wynnGuildId]) {
                         ++socket.data.hrMessageIndex;
                         ++hrMessageIndexes[socket.data.wynnGuildId];
-                        getHrMessage(message, channel, socket).then((out) => {
+                        getHrMessage(message, channel, socket.data).then((out) => {
                             io.of("/discord").to(botId).emit("wynnMessage", out!);
                         });
                     } else {
