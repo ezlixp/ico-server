@@ -67,6 +67,7 @@ describe("Discord socket events", () => {
                 ListeningChannel: "1290068270963232868",
             });
         });
+
         it("Should parse a standard message with discord uuid", async () => {
             const res = await getMessage("§b󏿿󏿿󏿿󏿿󏿿󏿿󏿢§0󐀂§b §3pixlze§3:§b nice", "1290068270963232868", {
                 wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
@@ -110,6 +111,7 @@ describe("Discord socket events", () => {
                 ListeningChannel: "1290068270963232868",
             });
         });
+
         it("Should parse raid message 2", async () => {
             const res = await getMessage(
                 "§epixlze§b, §ePickelated§b, §evex710§b, and §eEssentuan§bfinished§3Orphion'sNexus of Light§b and claimed §32048x Emeralds§b, §32x Aspects§b, §3+312m Guild Experience§b, and §3+330 Seasonal Rating",
@@ -132,6 +134,7 @@ describe("Discord socket events", () => {
                 ListeningChannel: "1290068270963232868",
             });
         });
+
         it("Should parse raid message 3", async () => {
             const res = await getMessage(
                 "§epixlze§b, §ePickelated§b, §evex710§b,and§eEssentuan§bfinished§3Orphion'sNexus ofLight§bandclaimed§32048xEmeralds§b,§32xAspects§b,§3+312m Guild Experience§b, and §3+330 Seasonal Rating",
@@ -154,6 +157,53 @@ describe("Discord socket events", () => {
                 ListeningChannel: "1290068270963232868",
             });
         });
+
+        it("Should parse raid message 4", async () => {
+            const res = await getMessage(
+                "§epixlze§bfinished§3Orphion'sNexus ofLight§bandclaimed§32048xEmeralds§b,§32xAspects§b,§3+312m Guild Experience§b, and §3+330 Seasonal Rating",
+                "1290068270963232868",
+                {
+                    wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
+                    messageIndex: 0,
+                    hrMessageIndex: 0,
+                    onlineStatus: OnlineStatus.ONLINE,
+                    username: "pixlze",
+                    modVersion: "1.21.1",
+                    discordUuid: "752610633580675176",
+                    muted: false,
+                },
+            );
+            expect(res).toMatchObject<IWynn2DiscordMessage>({
+                MessageType: 1,
+                HeaderContent: ["⚠️ Guild Raida", undefined],
+                TextContent: "pixlze completed Orphion'sNexus ofLight",
+                ListeningChannel: "1290068270963232868",
+            });
+        });
+
+        it("Should parse raid message 5", async () => {
+            const res = await getMessage(
+                "§epixlze§b finished §3Orphion'sNexus ofLight§bandclaimed§32048xEmeralds§b,§32xAspects§b,§3+312m Guild Experience§b, and §3+330 Seasonal Rating",
+                "1290068270963232868",
+                {
+                    wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
+                    messageIndex: 0,
+                    hrMessageIndex: 0,
+                    onlineStatus: OnlineStatus.ONLINE,
+                    username: "pixlze",
+                    modVersion: "1.21.1",
+                    discordUuid: "752610633580675176",
+                    muted: false,
+                },
+            );
+            expect(res).toMatchObject<IWynn2DiscordMessage>({
+                MessageType: 1,
+                HeaderContent: ["⚠️ Guild Raida", undefined],
+                TextContent: "pixlze completed Orphion'sNexus ofLight",
+                ListeningChannel: "1290068270963232868",
+            });
+        });
+
         it("Should increment rewards for raiders and aspect bans 1", async () => {
             await completeRaid(
                 "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
@@ -228,6 +278,7 @@ describe("Discord socket events", () => {
             expect(a3).toBe(0);
             expect(a4).toBe(1);
         });
+
         it("Should increment rewards for raiders and aspect bans 3", async () => {
             await completeRaid(
                 "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
@@ -257,15 +308,19 @@ describe("Discord socket events", () => {
             ).aspects;
             expect(a1).toBeGreaterThanOrEqual(0.5);
             expect(a1).toBeLessThanOrEqual(1.0);
+
             expect(a2).toBeGreaterThanOrEqual(0.5);
             expect(a2).toBeLessThanOrEqual(1.0);
+
             expect(a3).toBeGreaterThanOrEqual(0.5);
             expect(a3).toBeLessThanOrEqual(1.0);
+
             expect(a4).toBeGreaterThanOrEqual(0.5);
             expect(a4).toBeLessThanOrEqual(1.0);
 
             expect(a1 + a2 + a3 + a4).toEqual(3.5);
         });
+
         it("Should increment rewards for one fella", async () => {
             await completeRaid("b250f587-ab5e-48cd-bf90-71e65d6dc9e7", ["cbrt"], "Orphion'sNexus ofLight", 53);
             const a1 =
@@ -276,6 +331,7 @@ describe("Discord socket events", () => {
                 )?.aspects || 0;
             expect(a1).toBe(53);
         });
+
         it("Should do nothing if one fella and ban", async () => {
             await completeRaid("b250f587-ab5e-48cd-bf90-71e65d6dc9e7", ["pixlze"], "Orphion'sNexus ofLight", 53);
             const a1 =
