@@ -24,15 +24,14 @@ const wynnMessagePatterns: IWynnMessage[] = [
     },
     {
         pattern:
-            /^§.(?<player1>\S*?)§.(, ?§.(?<player2>\S*?)§.)?(, ?§.(?<player3>\S*?)§.)?(, ?and ?§.(?<player4>\S*?)§.)? ?finished ?§.(?<raid>.*?)§. ?and ?claimed ?§.(?<aspects>\d+)x ?Aspects.*$/,
+            /^§.(?<player1>\S*?)§.(, ?§.(?<player2>\S*?)§.)?(, ?§.(?<player3>\S*?)§.)?(, ?and ?§.(?<player4>\S*?)§.)? ?finished ?§.(?<raid>.*?)§. ?and ?claimed.*§.(?<aspects>\d+)x ?Aspects.*$/,
         messageType: 1,
         customMessage: (matcher, guildId) => {
-            let users: string[] = [matcher.groups!.player2];
-            const raid = matcher.groups!.raid;
+            let users: string[] = [matcher.groups!.player1];
             if (matcher.groups!.player2) users.push(matcher.groups!.player2);
             if (matcher.groups!.player3) users.push(matcher.groups!.player3);
             if (matcher.groups!.player4) users.push(matcher.groups!.player4);
-            const aspects = Number.parseInt(matcher.groups!.aspects);
+
             let outstring = "";
             users.map((user, index) => {
                 if (index != 0) {
@@ -41,54 +40,11 @@ const wynnMessagePatterns: IWynnMessage[] = [
                 }
                 outstring += user;
             });
-            outstring += " completed " + raid;
+            outstring += " completed " + matcher.groups!.raid;
 
-            // await Services.raid.updateRewards(await usernameToUuid(username), guildId, 0.5, 512, 1);
-            guildDatabases[guildId].RaidRepository.create({
-                users: users,
-                raid,
-            })
-                .then(async (newRaid) => {
-                    let users: (string | null)[] = await Promise.all(
-                        newRaid.users.map(async (username) => {
-                            try {
-                                if (await Services.user.isTakeAspect(await usernameToUuid(username))) {
-                                    return username;
-                                } else return null;
-                            } catch (err) {
-                                console.error("raid complete error:", err);
-                                return null;
-                            }
-                        }),
-                    );
-                    users = users.filter((u): u is string => u !== null);
-                    if (users.length == 0) return;
-                    const halfAspectsPer = Math.floor((2 * aspects) / users.length);
-                    const left = 2 * aspects - halfAspectsPer * users.length;
-                    for (let i = users.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [users[i], users[j]] = [users[j], users[i]];
-                    }
-                    await Promise.all(
-                        users.map(async (username, index) => {
-                            try {
-                                const reward = (halfAspectsPer + (index < left ? 1 : 0)) / 2;
-                                await Services.raid.updateRewards(
-                                    await usernameToUuid(username!),
-                                    guildId,
-                                    reward,
-                                    0,
-                                    1,
-                                );
-                            } catch (err) {
-                                console.error("raid reward error:", err);
-                            }
-                        }),
-                    );
-                })
-                .catch((error) => {
-                    console.error("log raid error:", error);
-                });
+            if (process.env.NODE_ENV !== "test")
+                completeRaid(guildId, users, matcher.groups!.raid, Number.parseInt(matcher.groups!.aspects));
+
             return outstring;
         },
         customHeader: "⚠️ Guild Raida",
@@ -305,6 +261,7 @@ export const getMessage = async (
     }
     return null;
 };
+
 export const getHrMessage = async (
     message: string,
     channel: string,
@@ -339,6 +296,43 @@ export const getHrMessage = async (
         }
     }
     return null;
+};
+
+export const completeRaid = async (guildId: string, users: string[], raid: string, aspects: number) => {
+    await guildDatabases[guildId]?.RaidRepository.create({
+        users: users,
+        raid,
+    }).catch(() => {});
+    let filteredUsers = await Promise.all(
+        users.map(async (username) => {
+            try {
+                if (await Services.user.isTakeAspect(await usernameToUuid(username))) {
+                    return username;
+                } else return null;
+            } catch (err) {
+                console.error("raid complete error:", err);
+                return null;
+            }
+        }),
+    );
+    filteredUsers = filteredUsers.filter((u): u is string => u !== null);
+    if (filteredUsers.length == 0) return;
+    const halfAspectsPer = Math.floor((2 * aspects) / filteredUsers.length);
+    const left = 2 * aspects - halfAspectsPer * filteredUsers.length;
+    for (let i = filteredUsers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filteredUsers[i], filteredUsers[j]] = [filteredUsers[j], filteredUsers[i]];
+    }
+    await Promise.all(
+        filteredUsers.map(async (username, index) => {
+            try {
+                const reward = (halfAspectsPer + (index < left ? 1 : 0)) / 2;
+                await Services.raid.updateRewards(await usernameToUuid(username!), guildId, reward, 0, 1);
+            } catch (err) {
+                console.error("raid reward error:", err);
+            }
+        }),
+    );
 };
 
 io.of(/^\/.*/).on("connect", (socket) => {
