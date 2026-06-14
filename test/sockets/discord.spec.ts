@@ -82,9 +82,11 @@ describe("Discord socket events", () => {
 
     describe("RECEIVE raid message", () => {
         it("Should parse raid message 1/2", () => {});
-        it("Should parse raid message 2/2", () => {});
-        it("Should increment rewards for raiders in guild");
-        it("Should not increment rewards for raiders not in guild");
+        it("Should parse raid message 2/2", () => {}); // different spacing test here
+        it("Should increment rewards for 1 raider");
+        it("Should increment rewards for 2 raiders");
+        it("Should increment rewards for 3 raiders");
+        it("Should increment rewards for 4 raiders");
     });
 
     describe("RECEIVE tome message", () => {

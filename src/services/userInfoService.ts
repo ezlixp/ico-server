@@ -46,6 +46,16 @@ export class UserInfoService {
         }
     }
 
+    async isTakeAspect(mcUuid: string): Promise<Boolean> {
+        try {
+            const user = await this.getUser({ mcUuid: mcUuid });
+            return user.takeAspects;
+        } catch (err) {
+            console.warn("take aspect check error:", err);
+            return true;
+        }
+    }
+
     async linkUser(options: FilterQuery<IUser>): Promise<HydratedDocument<IUser>> {
         this.validator.validateLinkUser(options);
 
