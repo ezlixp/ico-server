@@ -20,6 +20,7 @@ export default async function verifyInGuild(
     const wynnGuildId = request.params.wynnGuildId;
 
     if (process.env.NODE_ENV === "test") {
+        // TODO: just mock the checkifplayerisinguildasync for testing instead of wherever this is used
         if (mcUsername === "inguild" || request.params.wynnGuildId === "correct") next();
         else if (wynnGuildId !== "configured" && !(wynnGuildId in guildNames))
             throw new NotFoundError(GuildErrors.NOT_CONFIGURED);

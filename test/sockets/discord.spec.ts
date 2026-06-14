@@ -4,12 +4,19 @@ import { getMessage, registerMessageIndexes } from "../../src/sockets/discord";
 import { OnlineStatus } from "../../src/constants/onlineStatus";
 import { IWynn2DiscordMessage } from "../../src/types/messageTypes";
 import UserModel from "../../src/models/entities/userModel";
+import * as wynncraftApiClient from "../../src/communication/httpClients/wynncraftApiClient";
+import { guildDatabaseCreator } from "../globalSetup";
+import { guildDatabases } from "../../src/models/entities/guildDatabaseModel";
 
 describe("Discord socket events", () => {
+    let spy;
     beforeEach(async () => {
+        spy = jest
+            .spyOn(wynncraftApiClient, "default")
+            .mockImplementation(async (username: string, wynnGuildId: string) => username !== "!guild");
         mongoose.connection.dropDatabase();
         await Services.guildInfo.createNewGuild({
-            wynnGuildId: "b250f587ab5e48cdbf9071e65d6dc9e7",
+            wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
             wynnGuildName: "Idiot Co",
             discordGuildId: "810258030201143328",
             tomeChannel: "1125517737188409364",
@@ -27,6 +34,7 @@ describe("Discord socket events", () => {
 
     afterAll(async () => {
         await mongoose.connection.dropDatabase();
+        jest.clearAllMocks();
     });
 
     describe("RECEIVE wynn message base", () => {
@@ -35,7 +43,7 @@ describe("Discord socket events", () => {
                 "§b󏿿󏿿󏿿󏿿󏿿󏿿󏿢§0󐀂§b §3ASingleProton§3:§b nice",
                 "1290068270963232868",
                 {
-                    wynnGuildId: "b250f587ab5e48cdbf9071e65d6dc9e7",
+                    wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
                     messageIndex: 0,
                     hrMessageIndex: 0,
                     onlineStatus: OnlineStatus.ONLINE,
@@ -54,7 +62,7 @@ describe("Discord socket events", () => {
         });
         it("Should parse a standard message with discord uuid", async () => {
             const res = await getMessage("§b󏿿󏿿󏿿󏿿󏿿󏿿󏿢§0󐀂§b §3pixlze§3:§b nice", "1290068270963232868", {
-                wynnGuildId: "b250f587ab5e48cdbf9071e65d6dc9e7",
+                wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
                 messageIndex: 0,
                 hrMessageIndex: 0,
                 onlineStatus: OnlineStatus.ONLINE,
@@ -70,5 +78,32 @@ describe("Discord socket events", () => {
                 ListeningChannel: "1290068270963232868",
             });
         });
+    });
+
+    describe("RECEIVE raid message", () => {
+        it("Should parse raid message 1/2", () => {});
+        it("Should parse raid message 2/2", () => {});
+        it("Should increment rewards for raiders in guild");
+        it("Should not increment rewards for raiders not in guild");
+    });
+
+    describe("RECEIVE tome message", () => {
+        beforeEach(async () => {
+            await guildDatabaseCreator.dropDatabases();
+            await guildDatabaseCreator.registerDatabases();
+            guildDatabases["b250f587-ab5e-48cd-bf90-71e65d6dc9e7"].TomeRepository.create({ mcUsername: "pixlze" });
+        });
+        it("Should clear from tome list if recipient is on the tome list", () => {});
+        it("Should do nothing if recipient is not on the tome list", () => {});
+    });
+
+    describe("RECEIVE aspect message", () => {
+        beforeEach(async () => {
+            await guildDatabaseCreator.dropDatabases();
+            await guildDatabaseCreator.registerDatabases();
+            Services.raid.updateRewards("39365bd45c7841de8901c7dc5b7c64c4", "b250f587-ab5e-48cd-bf90-71e65d6dc9e7", 5);
+        });
+        it("Should decrement from user rewards if they exist");
+        it("Should decrement from user rewards if they don't exist");
     });
 });
