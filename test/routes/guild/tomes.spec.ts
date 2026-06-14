@@ -73,7 +73,7 @@ describe("Tomes routes", () => {
             expect(res.body).toMatchObject<ErrorResponse>({
                 status: 400,
                 title: "Error",
-                errorMessage: "User not in the guild.",
+                errorMessage: GuildErrors.NOT_IN_GUILD,
             });
         });
 
