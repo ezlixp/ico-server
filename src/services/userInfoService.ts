@@ -51,7 +51,8 @@ export class UserInfoService {
             const user = await this.getUser({ mcUuid: mcUuid });
             return user.takeAspects;
         } catch (err) {
-            console.warn("take aspect check error:", err);
+            if (!(err instanceof AppError && err.message === UserErrors.NOT_FOUND))
+                console.warn("take aspect check error:", err);
             return true;
         }
     }

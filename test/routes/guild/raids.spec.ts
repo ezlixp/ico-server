@@ -11,9 +11,9 @@ import { getMissingFieldMessage } from "../../../src/errors/implementations/miss
 import { RaidErrors } from "../../../src/errors/messages/raidErrors";
 
 describe("Raids routes", () => {
-    let spy;
-
     beforeAll(async () => {
+        jest.spyOn(mojangApiClient, "usernameToUuid").mockImplementation(async (username: string) => username);
+        jest.spyOn(mojangApiClient, "uuidToUsername").mockImplementation(async (uuid: string) => uuid);
         await Services.guildInfo.createNewGuild({
             wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
             wynnGuildName: "Idiot+Co",
@@ -22,8 +22,6 @@ describe("Raids routes", () => {
     });
 
     beforeEach(async () => {
-        spy = jest.spyOn(mojangApiClient, "usernameToUuid").mockImplementation(async (username: string) => username);
-        spy = jest.spyOn(mojangApiClient, "uuidToUsername").mockImplementation(async (uuid: string) => uuid);
         await guildDatabaseCreator.dropDatabases();
         await guildDatabaseCreator.registerDatabases();
         await guildDatabases["b250f587-ab5e-48cd-bf90-71e65d6dc9e7"].RaidRepository.create({
@@ -62,11 +60,8 @@ describe("Raids routes", () => {
         });
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
-
     afterAll(async () => {
+        jest.clearAllMocks();
         await guildDatabaseCreator.dropDatabases();
         await mongoose.connection.dropDatabase();
     });
