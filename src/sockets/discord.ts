@@ -1,7 +1,6 @@
 import "../config";
-import { IB2SDiscord2WynnMessage, IWynn2DiscordMessage, IWynnMessage } from "../types/messageTypes";
-import { decodeItem } from "../utils/wynntilsItemEncoding";
-import { getOnlineUsers, isOnline } from "../utils/socketUtils";
+import { IB2SDiscord2WynnMessage } from "../types/messageTypes";
+import { getOnlineUsers } from "../utils/socketUtils";
 import { checkVersion } from "../utils/versionUtils";
 import { guildDatabases, guildNames } from "../models/entities/guildDatabaseModel";
 import { getChannelFromWynnGuild } from "../utils/serverUtils";
@@ -10,144 +9,7 @@ import Services from "../services/services";
 import { usernameToUuid, uuidToUsername } from "../communication/httpClients/mojangApiClient";
 import { OnlineStatus } from "../constants/onlineStatus";
 import { Socket } from "socket.io";
-import { SocketData } from "../types/socketIOTypes";
-
-const ENCODED_DATA_PATTERN = /([\u{F0000}-\u{FFFFD}]|[\u{100000}-\u{10FFFF}])+/gu;
-/** Named groups header and content are taken if they exist for the message sent to discord,
- * if no custom message/custom header function is defined.
- */
-const wynnMessagePatterns: IWynnMessage[] = [
-    {
-        pattern: /^(?<pill>.*)§[38](?<header>.+?)(§[38])?:§[b8] (?<content>.*)$/,
-        messageType: 0,
-        // §b󏿿󏿿󏿿󏿿󏿿󏿿󏿢§0󐀂§b §3ASingleProton§3:§b nice
-    },
-    {
-        pattern:
-            /^§.(?<player1>\S*?)§.(, ?§.(?<player2>\S*?)§.)?(, ?§.(?<player3>\S*?)§.)?(, ?and ?§.(?<player4>\S*?)§.)? ?finished ?§.(?<raid>.*?)§. ?and ?claimed.*§.(?<aspects>\d+)x ?Aspects.*$/,
-        messageType: 1,
-        customMessage: (matcher, guildId) => {
-            let users: string[] = [matcher.groups!.player1];
-            if (matcher.groups!.player2) users.push(matcher.groups!.player2);
-            if (matcher.groups!.player3) users.push(matcher.groups!.player3);
-            if (matcher.groups!.player4) users.push(matcher.groups!.player4);
-
-            let outstring = "";
-            users.map((user, index) => {
-                if (index != 0) {
-                    if (index == users.length - 1) outstring += ", and ";
-                    else outstring += ", ";
-                }
-                outstring += user;
-            });
-            outstring += " completed " + matcher.groups!.raid;
-
-            if (process.env.NODE_ENV !== "test")
-                completeRaid(guildId, users, matcher.groups!.raid, Number.parseInt(matcher.groups!.aspects));
-
-            return outstring;
-        },
-        customHeader: "⚠️ Guild Raida",
-    },
-    {
-        pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.an ?Aspect§. ?to ?§.(?<receiver>\S*?)(§.)?$/,
-        messageType: 1,
-        customMessage: (matcher, guildId) => {
-            usernameToUuid(matcher.groups!.receiver)
-                .then(async (uuid) => {
-                    await Services.raid.updateRewards(uuid, guildId, -1);
-                })
-                .catch((error) => {
-                    console.error("aspect reward error:", error);
-                });
-            return matcher.groups!.giver + " has given an aspect to " + matcher.groups!.receiver;
-        },
-        customHeader: "⚠️ Aspect",
-    },
-    {
-        pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.a Guild ?Tome§. ?to ?§.(?<receiver>\S*?)(§.)?$/,
-        messageType: 1,
-        customMessage: (matcher, guildId) => {
-            Services.tome.deleteFromTomeList(matcher.groups!.receiver, guildId).catch((error) => {
-                console.error("tome reward error:", error);
-            });
-            return matcher.groups!.giver + " has given a tome to " + matcher.groups!.receiver;
-        },
-        customHeader: "⚠️ Tome",
-    },
-    {
-        pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.1024 ?Emeralds§. ?to ?§.(?<receiver>\S*?)(§.)?$/,
-        messageType: 1,
-        customMessage: (matcher) => matcher.groups!.giver + " has given a 1024 emeralds to " + matcher.groups!.receiver,
-        customHeader: "⚠️ 🤑",
-    },
-    { pattern: /^(?<content>.*)$/, customHeader: "⚠️ Info", messageType: 1 },
-    // The battle has begun!
-    // You have taken control of Turncoat Turnabout from [Tsd]!Use /guild territory to defend this territory. <-  is this hr or non hr
-];
-const hrMessagePatterns: IWynnMessage[] = [
-    {
-        // §3DGtal7§b set §eTower Volley bonus§b to level §e2§b on §3DragonboneGraveyard
-        pattern:
-            /^(?<content>§.(?<username>\S+?)§. set ?§.(?<bonus>.+?)§. ?to level ?§.(?<level>\d+?)§. ?on ?§.(?<territory>.*))$/,
-        messageType: 1,
-        customHeader: "⚠️ 🤓",
-    },
-    {
-        pattern: /^§.(?<username>\S+?)§. removed §.(?<changed>.+?)§. from §.(?<territory>.*)$/,
-        messageType: 1,
-        customHeader: "⚠️ 🤓",
-    },
-
-    {
-        pattern:
-            /^(?<content>§.(?<username>\S+?)§. changed ?§.(?<amount>\d+) ?(?<changed>\w+)§. ?on ?§3(?<territory>.*))$/,
-        messageType: 1,
-        customHeader: "⚠️ 🤓",
-        // §3DGtal7§b changed §e4 upgrades§b on §3Illuminant Path
-        // §3DGtal7§b changed §e6 bonuses§b on §3Rodoroc
-    },
-    {
-        pattern: /^(?<content>Territory §.(?<territory>.+?)§. is \w+ ?more ?resources ?than ?it ?can ?store!)$/,
-        messageType: 1,
-        customHeader: "⚠️ 🤓",
-    },
-    {
-        pattern: /^§.(?<username>\S+?)§. changed the ?global ?tax ?to ?§.(?<percent>\d+)%$/,
-        // §3_Fai1ure§b changed the global tax to §e70%
-        messageType: 1,
-        customHeader: "⚠️ 🤓",
-    },
-    {
-        pattern: /^(?<content>Territory §.(?<territory>.+?)§. ?production ?has ?stabilised)$/,
-        messageType: 1,
-        customHeader: "⚠️ 🤓",
-    },
-    {
-        pattern: /^(?<content>§.(?<username>.+?)§. applied the ?loadout ?§(?<loadout>..+?)§. ?on ?§.(?<territory>.*))$/,
-        messageType: 1,
-        customHeader: "⚠️ 🤓",
-        // §3ASingleProton§b applied the loadout §3fake med 3/3 res§b on §eFreezing Heights
-        // §3ASingleProton§b applied the loadout §3fake ass med§b on §eCraterDescent§b, §3Lava Lakes§b, §3Dogun Ritual Site§b,§3Perilous Grotto§b, §3Perilous Passage§b, §3SecludedPonds§b, §3Burning Airship§b, §3Bandit Cave§b, §3CascadingBasins§b, §3Wayward Split§b, §3Harpy's Haunt South§b,§3Parasitic Slime Mine§b, §3Turncoat Turnabout§b, §3WindingWaters§b, §3Panda Kingdom§b, §3Panda Path§b, §3ElefolkStomping Grounds§b, §3Protector's Pathway§b, and§3Canyon High Path
-    },
-    {
-        pattern:
-            /^(?<content>§.(?<username>\S+?)§. (?<action>\w+) §.(?<item>.+?)§. ?(?:to|from) ?the ?Guild ?Bank ?\(§.High ?Ranked§.\))$/,
-        messageType: 1,
-        customHeader: "⚠️ Info",
-    },
-    {
-        pattern: /^(?<content>§.A Guild Tome§. has been found ?and ?added ?to ?the ?Guild ?Rewards)$/,
-        messageType: 1,
-        customHeader: "⚠️ Info",
-    },
-    {
-        pattern: /^(?<content>.*)$/,
-        messageType: 1,
-        customHeader: "⚠️ Info",
-    },
-];
-const discordOnlyPattern = new RegExp("^(?<header>.+?): (?<content>.*)$");
+import { getDiscordOnlyMessage, getHrMessage, getMessage } from "./model/message";
 
 const messageIndexes: { [key: string]: number } = {};
 const hrMessageIndexes: { [key: string]: number } = {};
@@ -176,10 +38,6 @@ const errorHandler = (event: string, toHandle: Function) => {
             handleError(e, event);
         }
     };
-};
-
-const sanitize = (inp: string): string => {
-    return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$1").replaceAll(/§./g, "");
 };
 
 const loginMessage = (socket: Socket) => {
@@ -214,89 +72,6 @@ const logoutMessage = (socket: Socket) => {
         .catch((error) => {
             handleError(error, "logoutMessageSend");
         });
-};
-
-export const getMessage = async (
-    message: string,
-    channel: string,
-    socketData: SocketData,
-): Promise<IWynn2DiscordMessage | null> => {
-    for (let i = 0; i < wynnMessagePatterns.length; i++) {
-        const pattern = wynnMessagePatterns[i];
-        const matcher = pattern.pattern.exec(message);
-        if (matcher) {
-            const header = pattern.customHeader ? pattern.customHeader : matcher.groups!.header;
-            const rawMessage = pattern.customMessage
-                ? pattern.customMessage(matcher, socketData.wynnGuildId)
-                : matcher.groups!.content;
-            console.log(
-                header,
-                rawMessage,
-                messageIndexes[socketData.wynnGuildId],
-                "emitted by:",
-                socketData.username,
-                "discord:",
-                socketData.discordUuid,
-                "guild:",
-                socketData.wynnGuildId,
-            );
-
-            let discordUuid: string | undefined;
-            try {
-                const uuid = await usernameToUuid(header);
-                const user = await Services.user.getUserByMcUuid(uuid);
-                discordUuid = user?.discordUuid;
-            } catch {}
-            const message = sanitize(rawMessage).replace(
-                ENCODED_DATA_PATTERN,
-                (match, _) => `**__${decodeItem(match).name}__**`,
-            );
-            const online = await isOnline(header, socketData.wynnGuildId);
-            return {
-                MessageType: pattern.messageType,
-                HeaderContent: [sanitize(header) + (online ? "*" : ""), discordUuid],
-                TextContent: message,
-                ListeningChannel: channel,
-            } as IWynn2DiscordMessage;
-        }
-    }
-    return null;
-};
-
-export const getHrMessage = async (
-    message: string,
-    channel: string,
-    socketData: SocketData,
-): Promise<IWynn2DiscordMessage | null> => {
-    for (let i = 0; i < hrMessagePatterns.length; i++) {
-        const pattern = hrMessagePatterns[i];
-        const matcher = pattern.pattern.exec(message);
-        if (matcher) {
-            const header = pattern.customHeader ? pattern.customHeader : matcher.groups!.header;
-            const rawMessage = pattern.customMessage
-                ? pattern.customMessage(matcher, socketData.wynnGuildId)
-                : matcher.groups!.content;
-            console.log(
-                "hr",
-                header,
-                rawMessage,
-                hrMessageIndexes[socketData.wynnGuildId],
-                "emitted by:",
-                socketData.username,
-                "discord:",
-                socketData.discordUuid,
-                "guild:",
-                socketData.wynnGuildId,
-            );
-            return {
-                MessageType: pattern.messageType,
-                HeaderContent: [sanitize(header), undefined],
-                TextContent: sanitize(rawMessage),
-                ListeningChannel: channel,
-            } as IWynn2DiscordMessage;
-        }
-    }
-    return null;
 };
 
 export const completeRaid = async (guildId: string, users: string[], raid: string, aspects: number) => {
@@ -459,32 +234,10 @@ io.of("/discord").on("connection", (socket) => {
                 console.log("no channel set up for:", socket.data.wynnGuildId);
                 return;
             }
-            const matcher = discordOnlyPattern.exec(message);
-            if (matcher) {
-                const header = matcher.groups!.header;
-                const message = matcher.groups!.content.replace(
-                    ENCODED_DATA_PATTERN,
-                    (match, _) => `<${decodeItem(match).name}>`,
-                );
-                console.log(message, "discord only");
-                io.of("/discord")
-                    .to(botId)
-                    .emit("wynnMessage", {
-                        MessageType: 2,
-                        HeaderContent: [sanitize(header), socket.data.discordUuid],
-                        TextContent: sanitize(message),
-                        ListeningChannel: channel,
-                    });
-                io.of("/discord")
-                    .to(socket.data.wynnGuildId)
-                    .emit("discordMessage", {
-                        DiscordUsername: "@none",
-                        McUsername: header as string,
-                        ReplyAuthor: null,
-                        ReplyContent: null,
-                        Content: message.replace(/[‌⁤ÁÀ֎]/g, "") as string,
-                        WynnGuildId: socket.data.wynnGuildId,
-                    });
+            const res = await getDiscordOnlyMessage(message, channel, socket.data);
+            if (res != null) {
+                io.of("/discord").to(botId).emit("wynnMessage", res[0]);
+                io.of("/discord").to(socket.data.wynnGuildId).emit("discordMessage", res[1]);
             }
         }),
     );
