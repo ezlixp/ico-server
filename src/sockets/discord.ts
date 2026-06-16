@@ -89,7 +89,7 @@ const hrMessagePatterns: IWynnMessage[] = [
     {
         // §3DGtal7§b set §eTower Volley bonus§b to level §e2§b on §3DragonboneGraveyard
         pattern:
-            /^(?<content>§.(?<username>\S+?)§. set §.(?<bonus>.+?)§. to level §.(?<level>\d+?)§. on §.(?<territory>.*))$/,
+            /^(?<content>§.(?<username>\S+?)§. set ?§.(?<bonus>.+?)§. ?to level ?§.(?<level>\d+?)§. ?on ?§.(?<territory>.*))$/,
         messageType: 1,
         customHeader: "⚠️ 🤓",
     },
@@ -100,30 +100,31 @@ const hrMessagePatterns: IWynnMessage[] = [
     },
 
     {
-        pattern: /^(?<content>§.(?<username>\S+?)§. changed §.(?<amount>\d+) (?<changed>\w+)§. on §3(?<territory>.*))$/,
+        pattern:
+            /^(?<content>§.(?<username>\S+?)§. changed ?§.(?<amount>\d+) ?(?<changed>\w+)§. ?on ?§3(?<territory>.*))$/,
         messageType: 1,
         customHeader: "⚠️ 🤓",
         // §3DGtal7§b changed §e4 upgrades§b on §3Illuminant Path
         // §3DGtal7§b changed §e6 bonuses§b on §3Rodoroc
     },
     {
-        pattern: /^(?<content>Territory §.(?<territory>.+?)§. is \w+ more resources than it can store!)$/,
+        pattern: /^(?<content>Territory §.(?<territory>.+?)§. is \w+ ?more ?resources ?than ?it ?can ?store!)$/,
         messageType: 1,
         customHeader: "⚠️ 🤓",
     },
     {
-        pattern: /^§.(?<username>\S+?)§. changed the global tax to §.(?<percent>\d+)%$/,
+        pattern: /^§.(?<username>\S+?)§. changed the ?global ?tax ?to ?§.(?<percent>\d+)%$/,
         // §3_Fai1ure§b changed the global tax to §e70%
         messageType: 1,
         customHeader: "⚠️ 🤓",
     },
     {
-        pattern: /^(?<content>Territory §.(?<territory>.+?)§. production has stabilised)$/,
+        pattern: /^(?<content>Territory §.(?<territory>.+?)§. ?production ?has ?stabilised)$/,
         messageType: 1,
         customHeader: "⚠️ 🤓",
     },
     {
-        pattern: /^(?<content>§.(?<username>.+?)§. applied the loadout §(?<loadout>..+?)§. on §.(?<territory>.*))$/,
+        pattern: /^(?<content>§.(?<username>.+?)§. applied the ?loadout ?§(?<loadout>..+?)§. ?on ?§.(?<territory>.*))$/,
         messageType: 1,
         customHeader: "⚠️ 🤓",
         // §3ASingleProton§b applied the loadout §3fake med 3/3 res§b on §eFreezing Heights
@@ -136,7 +137,7 @@ const hrMessagePatterns: IWynnMessage[] = [
         customHeader: "⚠️ Info",
     },
     {
-        pattern: /^(?<content>§.A Guild Tome§. has been found and added to the Guild Rewards)$/,
+        pattern: /^(?<content>§.A Guild Tome§. has been found ?and ?added ?to ?the ?Guild ?Rewards)$/,
         messageType: 1,
         customHeader: "⚠️ Info",
     },
