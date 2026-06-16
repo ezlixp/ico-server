@@ -2,11 +2,11 @@ import "../config";
 import { IB2SDiscord2WynnMessage } from "../types/messageTypes";
 import { getOnlineUsers } from "../utils/socketUtils";
 import { checkVersion } from "../utils/versionUtils";
-import { guildDatabases, guildNames } from "../models/entities/guildDatabaseModel";
+import { guildNames } from "../models/entities/guildDatabaseModel";
 import { getChannelFromWynnGuild } from "../utils/serverUtils";
 import { io } from "../socket";
 import Services from "../services/services";
-import { usernameToUuid, uuidToUsername } from "../communication/httpClients/mojangApiClient";
+import { uuidToUsername } from "../communication/httpClients/mojangApiClient";
 import { OnlineStatus } from "../constants/onlineStatus";
 import { Socket } from "socket.io";
 import { getDiscordOnlyMessage, getHrMessage, getMessage } from "./model/message";
@@ -72,43 +72,6 @@ const logoutMessage = (socket: Socket) => {
         .catch((error) => {
             handleError(error, "logoutMessageSend");
         });
-};
-
-export const completeRaid = async (guildId: string, users: string[], raid: string, aspects: number) => {
-    await guildDatabases[guildId]?.RaidRepository.create({
-        users: users,
-        raid,
-    }).catch(() => {});
-    let filteredUsers = await Promise.all(
-        users.map(async (username) => {
-            try {
-                if (await Services.user.isTakeAspect(await usernameToUuid(username))) {
-                    return username;
-                } else return null;
-            } catch (err) {
-                console.error("raid complete error:", err);
-                return null;
-            }
-        }),
-    );
-    filteredUsers = filteredUsers.filter((u): u is string => u !== null);
-    if (filteredUsers.length == 0) return;
-    const halfAspectsPer = Math.floor((2 * aspects) / filteredUsers.length);
-    const left = 2 * aspects - halfAspectsPer * filteredUsers.length;
-    for (let i = filteredUsers.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [filteredUsers[i], filteredUsers[j]] = [filteredUsers[j], filteredUsers[i]];
-    }
-    await Promise.all(
-        filteredUsers.map(async (username, index) => {
-            try {
-                const reward = (halfAspectsPer + (index < left ? 1 : 0)) / 2;
-                await Services.raid.updateRewards(await usernameToUuid(username!), guildId, reward, 0, 1);
-            } catch (err) {
-                console.error("raid reward error:", err);
-            }
-        }),
-    );
 };
 
 io.of(/^\/.*/).on("connect", (socket) => {

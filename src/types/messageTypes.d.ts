@@ -52,3 +52,16 @@ export interface IWynn2DiscordMessage {
     TextContent: string;
     ListeningChannel: string;
 }
+
+export interface IS2CPlayerPositionMessage {
+    username: string;
+    x: number;
+    y: number;
+    z: number;
+}
+
+export interface IC2SPlayerPositionMessage {
+    x: number;
+    y: number;
+    z: number;
+}
