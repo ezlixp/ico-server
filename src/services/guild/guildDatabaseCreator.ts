@@ -2,6 +2,7 @@
 import { GuildDatabaseFactory } from "../../models/factories/guildDatabaseFactory";
 import mongoose from "mongoose";
 import Services from "../services";
+import { registerGuildData } from "../../sockets/discord";
 
 export class GuildDatabaseCreator {
     private constructor() {}
@@ -30,6 +31,7 @@ export class GuildDatabaseCreator {
         const databaseFactory = GuildDatabaseFactory.create(db);
 
         guildDatabases[wynnGuildId] = databaseFactory.createDatabase();
+        registerGuildData(wynnGuildId);
     }
 
     private async dropDatabase(guild: string) {
