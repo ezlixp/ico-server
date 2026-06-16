@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import Services from "../../src/services/services";
-import { completeRaid, getMessage, registerMessageIndexes } from "../../src/sockets/discord";
 import { OnlineStatus } from "../../src/constants/onlineStatus";
 import { IWynn2DiscordMessage } from "../../src/types/messageTypes";
 import UserModel from "../../src/models/entities/userModel";
@@ -8,6 +7,8 @@ import * as mojangApiClient from "../../src/communication/httpClients/mojangApiC
 import * as wynncraftApiClient from "../../src/communication/httpClients/wynncraftApiClient";
 import { guildDatabaseCreator } from "../globalSetup";
 import { guildDatabases } from "../../src/models/entities/guildDatabaseModel";
+import { registerMessageIndexes } from "../../src/sockets/discord";
+import { completeRaid, getMessage } from "../../src/sockets/model/message";
 
 describe("Discord socket events", () => {
     beforeAll(() => {
