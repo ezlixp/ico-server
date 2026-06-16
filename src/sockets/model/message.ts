@@ -1,10 +1,10 @@
 import { usernameToUuid } from "../../communication/httpClients/mojangApiClient";
+import { guildDatabases } from "../../models/entities/guildDatabaseModel";
 import Services from "../../services/services";
 import { IS2CDiscord2WynnMessage, IWynn2DiscordMessage, IWynnMessage } from "../../types/messageTypes";
 import { SocketData } from "../../types/socketIOTypes";
 import { isOnline } from "../../utils/socketUtils";
 import { decodeItem } from "../../utils/wynntilsItemEncoding";
-import { completeRaid } from "../discord";
 
 const sanitize = (inp: string): string => {
     return inp.replaceAll(/(_|\*|-|~|`|#)/g, "\\$1").replaceAll(/§./g, "");
@@ -147,6 +147,43 @@ const hrMessagePatterns: IWynnMessage[] = [
         customHeader: "⚠️ Info",
     },
 ];
+
+export const completeRaid = async (guildId: string, users: string[], raid: string, aspects: number) => {
+    await guildDatabases[guildId]?.RaidRepository.create({
+        users: users,
+        raid,
+    }).catch(() => {});
+    let filteredUsers = await Promise.all(
+        users.map(async (username) => {
+            try {
+                if (await Services.user.isTakeAspect(await usernameToUuid(username))) {
+                    return username;
+                } else return null;
+            } catch (err) {
+                console.error("raid complete error:", err);
+                return null;
+            }
+        }),
+    );
+    filteredUsers = filteredUsers.filter((u): u is string => u !== null);
+    if (filteredUsers.length == 0) return;
+    const halfAspectsPer = Math.floor((2 * aspects) / filteredUsers.length);
+    const left = 2 * aspects - halfAspectsPer * filteredUsers.length;
+    for (let i = filteredUsers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filteredUsers[i], filteredUsers[j]] = [filteredUsers[j], filteredUsers[i]];
+    }
+    await Promise.all(
+        filteredUsers.map(async (username, index) => {
+            try {
+                const reward = (halfAspectsPer + (index < left ? 1 : 0)) / 2;
+                await Services.raid.updateRewards(await usernameToUuid(username!), guildId, reward, 0, 1);
+            } catch (err) {
+                console.error("raid reward error:", err);
+            }
+        }),
+    );
+};
 
 export const getMessage = async (
     message: string,
