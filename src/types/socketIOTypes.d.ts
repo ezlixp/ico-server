@@ -1,6 +1,5 @@
 import {
     IB2SDiscord2WynnMessage,
-    IC2SPlayerPositionMessage,
     IS2CDiscord2WynnMessage,
     IS2CPlayerPositionMessage,
     IWynn2DiscordMessage,
@@ -11,6 +10,7 @@ export interface ServerToClientEvents {
     wynnMirror: (message: string) => void;
     discordMessage: (message: IS2CDiscord2WynnMessage) => void;
     playerPosition: (message: IS2CPlayerPositionMessage) => void;
+    playerHide: (message: string) => void;
     error: (error: string) => void;
 }
 
@@ -21,7 +21,9 @@ export interface ClientToServerEvents {
     discordMessage: (message: IB2SDiscord2WynnMessage) => void;
     onlineStatus: (newStatus: number) => void;
     listOnline: (callback: (users: string[]) => void) => void;
-    playerPosition: (message: IC2SPlayerPositionMessage) => void;
+    playerPosition: (message: string) => void;
+    requestAllPositions: () => void;
+    playerHide: () => void;
     sync: (ack: () => void) => void;
 }
 
