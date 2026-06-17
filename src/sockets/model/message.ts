@@ -94,7 +94,7 @@ const hrMessagePatterns: IWynnMessage[] = [
         customHeader: "⚠️ 🤓",
     },
     {
-        pattern: /^§.(?<username>\S+?)§. removed §.(?<changed>.+?)§. from §.(?<territory>.*)$/,
+        pattern: /^(?<content>§.(?<username>\S+?)§. removed §.(?<changed>.+?)§. from §.(?<territory>.*))$/,
         messageType: 1,
         customHeader: "⚠️ 🤓",
     },
@@ -113,7 +113,7 @@ const hrMessagePatterns: IWynnMessage[] = [
         customHeader: "⚠️ 🤓",
     },
     {
-        pattern: /^§.(?<username>\S+?)§. changed the ?global ?tax ?to ?§.(?<percent>\d+)%$/,
+        pattern: /^(?<content>§.(?<username>\S+?)§. changed the ?global ?tax ?to ?§.(?<percent>\d+)%)$/,
         // §3_Fai1ure§b changed the global tax to §e70%
         messageType: 1,
         customHeader: "⚠️ 🤓",
