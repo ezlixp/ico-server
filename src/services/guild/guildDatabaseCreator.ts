@@ -31,7 +31,7 @@ export class GuildDatabaseCreator {
         const databaseFactory = GuildDatabaseFactory.create(db);
 
         guildDatabases[wynnGuildId] = databaseFactory.createDatabase();
-        registerGuildData(wynnGuildId);
+        if (process.env.NODE_ENV !== "test") registerGuildData(wynnGuildId); // this creates a circular dependency if run from test env since things aren't loaded in the correct order
     }
 
     private async dropDatabase(guild: string) {
