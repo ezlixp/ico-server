@@ -45,8 +45,8 @@ describe("Discord socket events", () => {
     });
 
     describe("RECEIVE wynn message base", () => {
-        it("Should parse a standard message without discord uuid", async () => {
-            const res = await getMessage(
+        it("Should parse a standard message without discord uuid", (done) => {
+            getMessage(
                 "§b󏿿󏿿󏿿󏿿󏿿󏿿󏿢§0󐀂§b §3ASingleProton§3:§b nice",
                 "1290068270963232868",
                 {
@@ -59,38 +59,48 @@ describe("Discord socket events", () => {
                     discordUuid: "752610633580675176",
                     muted: false,
                 },
+                (res) => {
+                    expect(res).toMatchObject<IWynn2DiscordMessage>({
+                        MessageType: 0,
+                        HeaderContent: ["ASingleProton", undefined],
+                        TextContent: "nice",
+                        ListeningChannel: "1290068270963232868",
+                    });
+                    done();
+                },
             );
-            expect(res).toMatchObject<IWynn2DiscordMessage>({
-                MessageType: 0,
-                HeaderContent: ["ASingleProton", undefined],
-                TextContent: "nice",
-                ListeningChannel: "1290068270963232868",
-            });
         });
 
-        it("Should parse a standard message with discord uuid", async () => {
-            const res = await getMessage("§b󏿿󏿿󏿿󏿿󏿿󏿿󏿢§0󐀂§b §3pixlze§3:§b nice", "1290068270963232868", {
-                wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
-                messageIndex: 0,
-                hrMessageIndex: 0,
-                onlineStatus: OnlineStatus.ONLINE,
-                username: "pixlze",
-                modVersion: "1.21.1",
-                discordUuid: "752610633580675176",
-                muted: false,
-            });
-            expect(res).toMatchObject<IWynn2DiscordMessage>({
-                MessageType: 0,
-                HeaderContent: ["pixlze", "752610633580675176"],
-                TextContent: "nice",
-                ListeningChannel: "1290068270963232868",
-            });
+        it("Should parse a standard message with discord uuid", (done) => {
+            getMessage(
+                "§b󏿿󏿿󏿿󏿿󏿿󏿿󏿢§0󐀂§b §3pixlze§3:§b nice",
+                "1290068270963232868",
+                {
+                    wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
+                    messageIndex: 0,
+                    hrMessageIndex: 0,
+                    onlineStatus: OnlineStatus.ONLINE,
+                    username: "pixlze",
+                    modVersion: "1.21.1",
+                    discordUuid: "752610633580675176",
+                    muted: false,
+                },
+                (res) => {
+                    expect(res).toMatchObject<IWynn2DiscordMessage>({
+                        MessageType: 0,
+                        HeaderContent: ["pixlze", "752610633580675176"],
+                        TextContent: "nice",
+                        ListeningChannel: "1290068270963232868",
+                    });
+                    done();
+                },
+            );
         });
     });
 
     describe("RECEIVE raid message", () => {
-        it("Should parse raid message 1", async () => {
-            const res = await getMessage(
+        it("Should parse raid message 1", (done) => {
+            getMessage(
                 "§eAmiableOne§b, §eEssentuan§b, and §eDoggc§b finished §3The WartornPalace§b and claimed §32x Aspects§b, §32048x Emeralds§b, §3+312m GuildExperience§b, and §3+330 Seasonal Rating",
                 "1290068270963232868",
                 {
@@ -103,17 +113,20 @@ describe("Discord socket events", () => {
                     discordUuid: "752610633580675176",
                     muted: false,
                 },
+                (res) => {
+                    expect(res).toMatchObject<IWynn2DiscordMessage>({
+                        MessageType: 1,
+                        HeaderContent: ["⚠️ Guild Raida", undefined],
+                        TextContent: "AmiableOne, Essentuan, and Doggc completed The WartornPalace",
+                        ListeningChannel: "1290068270963232868",
+                    });
+                    done();
+                },
             );
-            expect(res).toMatchObject<IWynn2DiscordMessage>({
-                MessageType: 1,
-                HeaderContent: ["⚠️ Guild Raida", undefined],
-                TextContent: "AmiableOne, Essentuan, and Doggc completed The WartornPalace",
-                ListeningChannel: "1290068270963232868",
-            });
         });
 
-        it("Should parse raid message 2", async () => {
-            const res = await getMessage(
+        it("Should parse raid message 2", (done) => {
+            getMessage(
                 "§epixlze§b, §ePickelated§b, §evex710§b, and §eEssentuan§bfinished§3Orphion'sNexus of Light§b and claimed §32048x Emeralds§b, §32x Aspects§b, §3+312m Guild Experience§b, and §3+330 Seasonal Rating",
                 "1290068270963232868",
                 {
@@ -126,17 +139,20 @@ describe("Discord socket events", () => {
                     discordUuid: "752610633580675176",
                     muted: false,
                 },
+                (res) => {
+                    expect(res).toMatchObject<IWynn2DiscordMessage>({
+                        MessageType: 1,
+                        HeaderContent: ["⚠️ Guild Raida", undefined],
+                        TextContent: "pixlze, Pickelated, vex710, and Essentuan completed Orphion'sNexus of Light",
+                        ListeningChannel: "1290068270963232868",
+                    });
+                    done();
+                },
             );
-            expect(res).toMatchObject<IWynn2DiscordMessage>({
-                MessageType: 1,
-                HeaderContent: ["⚠️ Guild Raida", undefined],
-                TextContent: "pixlze, Pickelated, vex710, and Essentuan completed Orphion'sNexus of Light",
-                ListeningChannel: "1290068270963232868",
-            });
         });
 
-        it("Should parse raid message 3", async () => {
-            const res = await getMessage(
+        it("Should parse raid message 3", (done) => {
+            getMessage(
                 "§epixlze§b, §ePickelated§b, §evex710§b,and§eEssentuan§bfinished§3Orphion'sNexus ofLight§bandclaimed§32048xEmeralds§b,§32xAspects§b,§3+312m Guild Experience§b, and §3+330 Seasonal Rating",
                 "1290068270963232868",
                 {
@@ -149,17 +165,20 @@ describe("Discord socket events", () => {
                     discordUuid: "752610633580675176",
                     muted: false,
                 },
+                (res) => {
+                    expect(res).toMatchObject<IWynn2DiscordMessage>({
+                        MessageType: 1,
+                        HeaderContent: ["⚠️ Guild Raida", undefined],
+                        TextContent: "pixlze, Pickelated, vex710, and Essentuan completed Orphion'sNexus ofLight",
+                        ListeningChannel: "1290068270963232868",
+                    });
+                    done();
+                },
             );
-            expect(res).toMatchObject<IWynn2DiscordMessage>({
-                MessageType: 1,
-                HeaderContent: ["⚠️ Guild Raida", undefined],
-                TextContent: "pixlze, Pickelated, vex710, and Essentuan completed Orphion'sNexus ofLight",
-                ListeningChannel: "1290068270963232868",
-            });
         });
 
-        it("Should parse raid message 4", async () => {
-            const res = await getMessage(
+        it("Should parse raid message 4", (done) => {
+            getMessage(
                 "§epixlze§bfinished§3Orphion'sNexus ofLight§bandclaimed§32048xEmeralds§b,§32xAspects§b,§3+312m Guild Experience§b, and §3+330 Seasonal Rating",
                 "1290068270963232868",
                 {
@@ -172,17 +191,20 @@ describe("Discord socket events", () => {
                     discordUuid: "752610633580675176",
                     muted: false,
                 },
+                (res) => {
+                    expect(res).toMatchObject<IWynn2DiscordMessage>({
+                        MessageType: 1,
+                        HeaderContent: ["⚠️ Guild Raida", undefined],
+                        TextContent: "pixlze completed Orphion'sNexus ofLight",
+                        ListeningChannel: "1290068270963232868",
+                    });
+                    done();
+                },
             );
-            expect(res).toMatchObject<IWynn2DiscordMessage>({
-                MessageType: 1,
-                HeaderContent: ["⚠️ Guild Raida", undefined],
-                TextContent: "pixlze completed Orphion'sNexus ofLight",
-                ListeningChannel: "1290068270963232868",
-            });
         });
 
-        it("Should parse raid message 5", async () => {
-            const res = await getMessage(
+        it("Should parse raid message 5", (done) => {
+            getMessage(
                 "§epixlze§b finished §3Orphion'sNexus ofLight§bandclaimed§32048xEmeralds§b,§32xAspects§b,§3+312m Guild Experience§b, and §3+330 Seasonal Rating",
                 "1290068270963232868",
                 {
@@ -195,13 +217,16 @@ describe("Discord socket events", () => {
                     discordUuid: "752610633580675176",
                     muted: false,
                 },
+                (res) => {
+                    expect(res).toMatchObject<IWynn2DiscordMessage>({
+                        MessageType: 1,
+                        HeaderContent: ["⚠️ Guild Raida", undefined],
+                        TextContent: "pixlze completed Orphion'sNexus ofLight",
+                        ListeningChannel: "1290068270963232868",
+                    });
+                    done();
+                },
             );
-            expect(res).toMatchObject<IWynn2DiscordMessage>({
-                MessageType: 1,
-                HeaderContent: ["⚠️ Guild Raida", undefined],
-                TextContent: "pixlze completed Orphion'sNexus ofLight",
-                ListeningChannel: "1290068270963232868",
-            });
         });
 
         it("Should increment rewards for raiders and aspect bans 1", async () => {

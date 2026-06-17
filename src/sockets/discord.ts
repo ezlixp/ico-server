@@ -135,7 +135,7 @@ io.of("/discord").on("connection", (socket) => {
                         ++socket.data.messageIndex;
                         ++Services.guildInfo.messageIndexes[socket.data.wynnGuildId];
                         io.of("/discord").to(socket.data.wynnGuildId).emit("wynnMirror", message);
-                        getMessage(message, channel, socket.data).then((out) => {
+                        getMessage(message, channel, socket.data, (out) => {
                             io.of("/discord").to(botId).emit("wynnMessage", out!);
                         });
                     } else {
@@ -169,7 +169,7 @@ io.of("/discord").on("connection", (socket) => {
                     if (socket.data.hrMessageIndex === Services.guildInfo.hrMessageIndexes[socket.data.wynnGuildId]) {
                         ++socket.data.hrMessageIndex;
                         ++Services.guildInfo.hrMessageIndexes[socket.data.wynnGuildId];
-                        getHrMessage(message, channel, socket.data).then((out) => {
+                        getHrMessage(message, channel, socket.data, (out) => {
                             io.of("/discord").to(botId).emit("wynnMessage", out!);
                         });
                     } else {

@@ -185,11 +185,12 @@ export const completeRaid = async (guildId: string, users: string[], raid: strin
     );
 };
 
-export const getMessage = async (
+export const getMessage = (
     message: string,
     channel: string,
     socketData: SocketData,
-): Promise<IWynn2DiscordMessage | null> => {
+    callback: (message: IWynn2DiscordMessage) => void,
+) => {
     for (let i = 0; i < wynnMessagePatterns.length; i++) {
         const pattern = wynnMessagePatterns[i];
         const matcher = pattern.pattern.exec(message);
@@ -210,32 +211,40 @@ export const getMessage = async (
             );
 
             let discordUuid: string | undefined;
-            try {
-                const uuid = await usernameToUuid(header);
-                const user = await Services.user.getUserByMcUuid(uuid);
-                discordUuid = user?.discordUuid;
-            } catch {}
-            const message = sanitize(rawMessage).replace(
-                ENCODED_DATA_PATTERN,
-                (match, _) => `**__${decodeItem(match).name}__**`,
-            );
-            const online = await isOnline(header, socketData.wynnGuildId);
-            return {
-                MessageType: pattern.messageType,
-                HeaderContent: [sanitize(header) + (online ? "*" : ""), discordUuid],
-                TextContent: message,
-                ListeningChannel: channel,
-            } as IWynn2DiscordMessage;
+            usernameToUuid(header)
+                .then(async (uuid) => {
+                    try {
+                        const user = await Services.user.getUserByMcUuid(uuid);
+                        discordUuid = user?.discordUuid;
+                    } catch {}
+                })
+                .catch(() => {})
+                .finally(() => {
+                    const message = sanitize(rawMessage).replace(
+                        ENCODED_DATA_PATTERN,
+                        (match, _) => `**__${decodeItem(match).name}__**`,
+                    );
+                    isOnline(header, socketData.wynnGuildId).then((online) => {
+                        callback({
+                            MessageType: pattern.messageType,
+                            HeaderContent: [sanitize(header) + (online ? "*" : ""), discordUuid],
+                            TextContent: message,
+                            ListeningChannel: channel,
+                        });
+                    });
+                });
+            break;
         }
     }
     return null;
 };
 
-export const getHrMessage = async (
+export const getHrMessage = (
     message: string,
     channel: string,
     socketData: SocketData,
-): Promise<IWynn2DiscordMessage | null> => {
+    callback: (message: IWynn2DiscordMessage) => void,
+) => {
     for (let i = 0; i < hrMessagePatterns.length; i++) {
         const pattern = hrMessagePatterns[i];
         const matcher = pattern.pattern.exec(message);
@@ -255,15 +264,15 @@ export const getHrMessage = async (
                 "guild:",
                 socketData.wynnGuildId,
             );
-            return {
+            callback({
                 MessageType: pattern.messageType,
                 HeaderContent: [sanitize(header), undefined],
                 TextContent: sanitize(rawMessage),
                 ListeningChannel: channel,
-            } as IWynn2DiscordMessage;
+            });
+            break;
         }
     }
-    return null;
 };
 
 export const getDiscordOnlyMessage = async (
