@@ -2,7 +2,6 @@ import "../config";
 import { IB2SDiscord2WynnMessage, IC2SPlayerPositionMessage } from "../types/messageTypes";
 import { getOnlineUsers } from "../utils/socketUtils";
 import { checkVersion } from "../utils/versionUtils";
-import { guildNames } from "../models/entities/guildDatabaseModel";
 import { getChannelFromWynnGuild } from "../utils/serverUtils";
 import { io } from "../socket";
 import Services from "../services/services";
@@ -11,23 +10,7 @@ import { OnlineStatus } from "../constants/onlineStatus";
 import { Socket } from "socket.io";
 import { getDiscordOnlyMessage, getHrMessage, getMessage } from "./model/message";
 
-const messageIndexes: { [key: string]: number } = {};
-const hrMessageIndexes: { [key: string]: number } = {};
-const playerPositions: { [key: string]: { [key: string]: { x: number; y: number; z: number } } } = {};
-
 const disconnectTimers: { [key: string]: NodeJS.Timeout | null } = {};
-
-export const registerAllGuildData = () => {
-    Object.entries(guildNames).forEach(([wynnGuildId, _]) => {
-        registerGuildData(wynnGuildId);
-    });
-};
-
-export const registerGuildData = (wynnGuildId: string) => {
-    messageIndexes[wynnGuildId] = 0;
-    hrMessageIndexes[wynnGuildId] = 0;
-    playerPositions[wynnGuildId] = {};
-};
 
 let botId = "";
 const handleError = (error: Error, event: string) => {
@@ -96,12 +79,12 @@ io.of("/discord").on("connection", (socket) => {
     if (socket.data.wynnGuildId === "*") {
         botId = socket.id;
     } else {
-        if (messageIndexes[socket.data.wynnGuildId] == undefined) {
-            messageIndexes[socket.data.wynnGuildId] = 0;
-            hrMessageIndexes[socket.data.wynnGuildId] = 0;
+        if (Services.guildInfo.messageIndexes[socket.data.wynnGuildId] == undefined) {
+            Services.guildInfo.messageIndexes[socket.data.wynnGuildId] = 0;
+            Services.guildInfo.hrMessageIndexes[socket.data.wynnGuildId] = 0;
         }
-        socket.data.messageIndex = messageIndexes[socket.data.wynnGuildId];
-        socket.data.hrMessageIndex = hrMessageIndexes[socket.data.wynnGuildId];
+        socket.data.messageIndex = Services.guildInfo.messageIndexes[socket.data.wynnGuildId];
+        socket.data.hrMessageIndex = Services.guildInfo.hrMessageIndexes[socket.data.wynnGuildId];
         if (disconnectTimers[socket.data.discordUuid] != null) {
             clearTimeout(disconnectTimers[socket.data.discordUuid]!);
             disconnectTimers[socket.data.discordUuid] = null;
@@ -111,7 +94,7 @@ io.of("/discord").on("connection", (socket) => {
             }
         }
         socket.join(socket.data.wynnGuildId);
-        Object.entries(playerPositions[socket.data.wynnGuildId]).map(([username, position]) => {
+        Object.entries(Services.guildInfo.playerPositions[socket.data.wynnGuildId]).map(([username, position]) => {
             io.of("/discord")
                 .to(socket.id)
                 .emit("playerPosition", { username: username, x: position.x, y: position.y, z: position.z });
@@ -148,9 +131,9 @@ io.of("/discord").on("connection", (socket) => {
                         return;
                     }
 
-                    if (socket.data.messageIndex === messageIndexes[socket.data.wynnGuildId]) {
+                    if (socket.data.messageIndex === Services.guildInfo.messageIndexes[socket.data.wynnGuildId]) {
                         ++socket.data.messageIndex;
-                        ++messageIndexes[socket.data.wynnGuildId];
+                        ++Services.guildInfo.messageIndexes[socket.data.wynnGuildId];
                         io.of("/discord").to(socket.data.wynnGuildId).emit("wynnMirror", message);
                         getMessage(message, channel, socket.data).then((out) => {
                             io.of("/discord").to(botId).emit("wynnMessage", out!);
@@ -183,9 +166,9 @@ io.of("/discord").on("connection", (socket) => {
                         return;
                     }
 
-                    if (socket.data.hrMessageIndex === hrMessageIndexes[socket.data.wynnGuildId]) {
+                    if (socket.data.hrMessageIndex === Services.guildInfo.hrMessageIndexes[socket.data.wynnGuildId]) {
                         ++socket.data.hrMessageIndex;
-                        ++hrMessageIndexes[socket.data.wynnGuildId];
+                        ++Services.guildInfo.hrMessageIndexes[socket.data.wynnGuildId];
                         getHrMessage(message, channel, socket.data).then((out) => {
                             io.of("/discord").to(botId).emit("wynnMessage", out!);
                         });
@@ -240,14 +223,18 @@ io.of("/discord").on("connection", (socket) => {
      */
     socket.on("playerPosition", (message: string) => {
         const data: IC2SPlayerPositionMessage = JSON.parse(message);
-        playerPositions[socket.data.wynnGuildId][socket.data.username] = { x: data.x, y: data.y, z: data.z };
+        Services.guildInfo.playerPositions[socket.data.wynnGuildId][socket.data.username] = {
+            x: data.x,
+            y: data.y,
+            z: data.z,
+        };
         socket
             .to(socket.data.wynnGuildId)
             .emit("playerPosition", { username: socket.data.username, x: data.x, y: data.y, z: data.z });
     });
 
     socket.on("requestAllPositions", () => {
-        Object.entries(playerPositions[socket.data.wynnGuildId]).map(([username, position]) => {
+        Object.entries(Services.guildInfo.playerPositions[socket.data.wynnGuildId]).map(([username, position]) => {
             io.of("/discord")
                 .to(socket.id)
                 .emit("playerPosition", { username: username, x: position.x, y: position.y, z: position.z });
@@ -258,8 +245,8 @@ io.of("/discord").on("connection", (socket) => {
      * Event that gets fired upon a player notifying the server to be hidden
      */
     socket.on("playerHide", () => {
-        if (Object.hasOwn(playerPositions[socket.data.wynnGuildId], socket.data.username)) {
-            delete playerPositions[socket.data.wynnGuildId][socket.data.username];
+        if (Object.hasOwn(Services.guildInfo.playerPositions[socket.data.wynnGuildId], socket.data.username)) {
+            delete Services.guildInfo.playerPositions[socket.data.wynnGuildId][socket.data.username];
             socket.to(socket.data.wynnGuildId).emit("playerHide", socket.data.username);
         }
     });
@@ -283,7 +270,7 @@ io.of("/discord").on("connection", (socket) => {
     );
 
     socket.on("sync", (ack) => {
-        socket.data.messageIndex = messageIndexes[socket.data.wynnGuildId];
+        socket.data.messageIndex = Services.guildInfo.messageIndexes[socket.data.wynnGuildId];
         ack();
     });
 
@@ -296,7 +283,7 @@ io.of("/discord").on("connection", (socket) => {
                 .then((sockets) => {
                     sockets.forEach((s) => {
                         if (s.data.wynnGuildId === socket.data.wynnGuildId)
-                            s.data.messageIndex = messageIndexes[socket.data.wynnGuildId];
+                            s.data.messageIndex = Services.guildInfo.messageIndexes[socket.data.wynnGuildId];
                     });
                 });
             if (socket.data.discordUuid !== "!bot") {
@@ -306,8 +293,8 @@ io.of("/discord").on("connection", (socket) => {
                         disconnectTimers[socket.data.discordUuid] = null;
                     }, 10000);
                 }
-                if (Object.hasOwn(playerPositions[socket.data.wynnGuildId], socket.data.username)) {
-                    delete playerPositions[socket.data.wynnGuildId][socket.data.username];
+                if (Object.hasOwn(Services.guildInfo.playerPositions[socket.data.wynnGuildId], socket.data.username)) {
+                    delete Services.guildInfo.playerPositions[socket.data.wynnGuildId][socket.data.username];
                     io.of("/discord").to(socket.data.wynnGuildId).emit("playerHide", socket.data.username);
                 }
             }

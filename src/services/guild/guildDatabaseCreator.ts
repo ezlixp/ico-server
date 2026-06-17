@@ -2,7 +2,6 @@
 import { GuildDatabaseFactory } from "../../models/factories/guildDatabaseFactory";
 import mongoose from "mongoose";
 import Services from "../services";
-import { registerGuildData } from "../../sockets/discord";
 
 export class GuildDatabaseCreator {
     private constructor() {}
@@ -31,7 +30,7 @@ export class GuildDatabaseCreator {
         const databaseFactory = GuildDatabaseFactory.create(db);
 
         guildDatabases[wynnGuildId] = databaseFactory.createDatabase();
-        if (process.env.NODE_ENV !== "test") registerGuildData(wynnGuildId); // this creates a circular dependency if run from test env since things aren't loaded in the correct order
+        Services.guildInfo.registerGuildData(wynnGuildId);
     }
 
     private async dropDatabase(guild: string) {

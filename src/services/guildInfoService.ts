@@ -5,11 +5,15 @@ import { GuildInfoRepository } from "../repositories/guildInfoRepository";
 import { GuildDatabaseCreator } from "./guild/guildDatabaseCreator";
 import { NotFoundError } from "../errors/implementations/notFoundError";
 import { GuildErrors } from "../errors/messages/guildErrors";
+import { guildNames } from "../models/entities/guildDatabaseModel";
 
 export class GuildInfoService {
     private readonly guildDatabaseCreator: GuildDatabaseCreator;
     private readonly validator: GuildInfoServiceValidator;
     private readonly repository: GuildInfoRepository;
+    public messageIndexes: { [key: string]: number } = {};
+    public hrMessageIndexes: { [key: string]: number } = {};
+    public playerPositions: { [key: string]: { [key: string]: { x: number; y: number; z: number } } } = {};
 
     private constructor() {
         this.guildDatabaseCreator = GuildDatabaseCreator.create();
@@ -19,6 +23,18 @@ export class GuildInfoService {
 
     public static create() {
         return new GuildInfoService();
+    }
+
+    public registerAllGuildData() {
+        Object.entries(guildNames).forEach(([wynnGuildId, _]) => {
+            this.registerGuildData(wynnGuildId);
+        });
+    }
+
+    public registerGuildData(wynnGuildId: string) {
+        this.messageIndexes[wynnGuildId] = 0;
+        this.hrMessageIndexes[wynnGuildId] = 0;
+        this.playerPositions[wynnGuildId] = {};
     }
 
     public async createNewGuild(
