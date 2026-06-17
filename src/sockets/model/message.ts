@@ -78,7 +78,7 @@ const wynnMessagePatterns: IWynnMessage[] = [
     {
         pattern: /^§.(?<giver>\S*?)(§.)? rewarded §.1024 ?Emeralds§. ?to ?§.(?<receiver>\S*?)(§.)?$/,
         messageType: 1,
-        customMessage: (matcher) => matcher.groups!.giver + " has given a 1024 emeralds to " + matcher.groups!.receiver,
+        customMessage: (matcher) => matcher.groups!.giver + " has given 1024 emeralds to " + matcher.groups!.receiver,
         customHeader: "⚠️ 🤑",
     },
     { pattern: /^(?<content>.*)$/, customHeader: "⚠️ Info", messageType: 1 },
