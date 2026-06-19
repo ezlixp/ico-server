@@ -2,25 +2,24 @@ import mongoose from "mongoose";
 import GuildInfoModel from "../../src/models/entities/guildInfoModel";
 import { API_VERSION } from "../../src/config";
 import { authHeader, request } from "../globalSetup";
+import Services from "../../src/services/services";
 
 describe("Guild info routes", () => {
     beforeEach(async () => {
         mongoose.connection.dropDatabase();
-        await GuildInfoModel.insertMany([
-            {
-                wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
-                wynnGuildName: "Idiot Co",
-                discordGuildId: "810258030201143328",
-                tomeChannel: "1125517737188409364",
-                layoffsChannel: "1135296640803147806",
-                raidsChannel: "1272044811771449365",
-                warChannel: "863553410813001759",
-                privilegedRoles: ["1290068312528519228", "810680738843721738"],
-                listeningChannel: "1290068270963232868",
-                broadcastingChannel: "1290068270963232868",
-                mutedUuids: ["1"],
-            },
-        ]);
+        await Services.guildInfo.createNewGuild({
+            wynnGuildId: "b250f587-ab5e-48cd-bf90-71e65d6dc9e7",
+            wynnGuildName: "Idiot Co",
+            discordGuildId: "810258030201143328",
+            tomeChannel: "1125517737188409364",
+            layoffsChannel: "1135296640803147806",
+            raidsChannel: "1272044811771449365",
+            warChannel: "863553410813001759",
+            privilegedRoles: ["1290068312528519228", "810680738843721738"],
+            listeningChannel: "1290068270963232868",
+            broadcastingChannel: "1290068270963232868",
+            mutedUuids: ["1"],
+        });
     });
 
     afterAll(async () => {

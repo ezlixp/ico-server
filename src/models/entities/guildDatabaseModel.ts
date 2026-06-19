@@ -15,8 +15,16 @@ export interface IGuildDatabases {
     [key: string]: IGuildDatabase;
 }
 
+/**
+ * key: name
+ * value: guild id
+ */
 export const guildIds: { [key: string]: string } = {};
 
+/**
+ * key: guild id
+ * value: name
+ */
 export const guildNames: { [key: string]: string } = {};
 
 export const guildDatabases: IGuildDatabases = {};

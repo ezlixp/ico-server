@@ -3,7 +3,7 @@ import "./config";
 import "./sockets/discord";
 import { server } from "./socket";
 import { GuildDatabaseCreator } from "./services/guild/guildDatabaseCreator";
-import { registerMessageIndexes } from "./sockets/discord";
+import Services from "./services/services";
 
 mongoose.Schema.Types.String.checkRequired((v) => typeof v === "string");
 
@@ -25,7 +25,7 @@ try {
     connect(dbUrl, { retryWrites: true, writeConcern: { w: "majority" } }).then(() => {
         const databaseCreator = GuildDatabaseCreator.create();
         databaseCreator.registerDatabases().then(() => {
-            registerMessageIndexes();
+            Services.guildInfo.registerAllGuildData();
             const PORT = process.env.PORT || 3000;
 
             server.listen(PORT, () => {

@@ -30,6 +30,7 @@ export class GuildDatabaseCreator {
         const databaseFactory = GuildDatabaseFactory.create(db);
 
         guildDatabases[wynnGuildId] = databaseFactory.createDatabase();
+        Services.guildInfo.registerGuildData(wynnGuildId);
     }
 
     private async dropDatabase(guild: string) {

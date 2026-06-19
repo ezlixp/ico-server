@@ -5,6 +5,7 @@ import { authHeader, request } from "../globalSetup";
 import mongoose from "mongoose";
 import { getMissingFieldMessage } from "../../src/errors/implementations/missingFieldError";
 import { ErrorResponse } from "../../src/communication/responses/errorResponse";
+import { GuildErrors } from "../../src/errors/messages/guildErrors";
 
 describe("User info routes", () => {
     beforeEach(async () => {
@@ -299,7 +300,7 @@ describe("User info routes", () => {
             expect(res.body).toMatchObject<ErrorResponse>({
                 status: 400,
                 title: "Error",
-                errorMessage: "User not in the guild.",
+                errorMessage: GuildErrors.NOT_IN_GUILD,
             });
         });
     });

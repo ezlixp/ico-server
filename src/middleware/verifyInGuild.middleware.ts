@@ -20,14 +20,21 @@ export default async function verifyInGuild(
     const wynnGuildId = request.params.wynnGuildId;
 
     if (process.env.NODE_ENV === "test") {
+        // TODO: just mock the checkifplayerisinguildasync for testing instead of wherever this is used
         if (mcUsername === "inguild" || request.params.wynnGuildId === "correct") next();
         else if (wynnGuildId !== "configured" && !(wynnGuildId in guildNames))
             throw new NotFoundError(GuildErrors.NOT_CONFIGURED);
-        else throw new GuildVerificationError("User not in the guild.");
+        else
+            throw new GuildVerificationError(
+                "User not in the guild. If you believe this to be an error, please try again later.",
+            );
         return;
     }
 
     if (!(wynnGuildId in guildNames)) throw new ValidationError(GuildErrors.NOT_CONFIGURED);
     if (await checkIfPlayerIsInGuildAsync(mcUsername, wynnGuildId)) next();
-    else throw new GuildVerificationError("User not in the guild.");
+    else
+        throw new GuildVerificationError(
+            "User not in the guild. If you believe this to be an error, please try again later.",
+        );
 }

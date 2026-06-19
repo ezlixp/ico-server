@@ -12,8 +12,6 @@ import Services from "../../services/services";
 const tomeRouter = Router();
 
 tomeRouter.get("/:wynnGuildId", async (request: GuildRequest, response: DefaultResponse<ITome[]>) => {
-    console.log(request.params.wynnGuildId);
-    console.log(await Services.tome.getTomeList(request.params.wynnGuildId));
     response.send(await Services.tome.getTomeList(request.params.wynnGuildId));
 });
 

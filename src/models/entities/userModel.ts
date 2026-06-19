@@ -6,6 +6,7 @@ export interface IUser extends BaseModel {
     mcUuid: string;
     blocked: string[];
     banned: boolean;
+    takeAspects: boolean;
     verified: boolean;
     onlineStatus: number; // 0 is online, 1 is idle (not implemented), 2 is dnd (not implemented), 3 is appear offline
     refreshToken: string;
@@ -31,6 +32,7 @@ const userSchema: Schema<IUser> = new Schema(
             default: [],
         },
         banned: { type: Boolean, required: true, default: false },
+        takeAspects: { type: Boolean, required: true, default: true },
         onlineStatus: {
             type: Number,
             rqeuired: true,
