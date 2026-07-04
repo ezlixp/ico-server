@@ -49,7 +49,7 @@ export class UserInfoService {
     async isTakeAspect(mcUuid: string): Promise<Boolean> {
         try {
             const user = await this.getUser({ mcUuid: mcUuid });
-            return user.takeAspects;
+            return user.takeAspects ?? true;
         } catch (err) {
             if (!(err instanceof AppError && err.message === UserErrors.NOT_FOUND))
                 console.warn("take aspect check error:", err);
