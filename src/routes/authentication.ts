@@ -8,6 +8,7 @@ import { TokenErrors } from "../errors/messages/tokenErrors";
 import { usernameToUuid } from "../communication/httpClients/mojangApiClient";
 import Services from "../services/services";
 import { UserErrors } from "../errors/messages/userErrors";
+import { getToken, getUser } from "../communication/httpClients/discordApiClient";
 
 /**
  * Maps all authentication-related endpoints. endpoint: .../auth/
@@ -66,14 +67,14 @@ const authorizationCode = async (
     const mcUsername = request.body.mcUsername;
     const user = await Services.user.getUserByMcUuid(await usernameToUuid(mcUsername));
     if (!user) throw new ValidationError(UserErrors.NOT_LINKED);
-    // TODO implement bot command with otp
-    // const discordToken = await getToken(code);
 
-    // if (!discordToken) throw new ValidationError("error validating discord account");
+    const discordToken = await getToken(code);
 
-    // const discordUser = await getUser(discordToken.access_token);
+    if (!discordToken) throw new ValidationError("error validating discord account");
 
-    // if (!discordUser) throw new ValidationError("could not validate discord account");
+    const discordUser = await getUser(discordToken.access_token);
+
+    if (!discordUser) throw new ValidationError("could not validate discord account");
 
     // Checks database to see if mc username is properly linked with logged in discord account
     return response.send(
