@@ -94,11 +94,11 @@ io.of("/discord").on("connection", (socket) => {
             }
         }
         socket.join(socket.data.wynnGuildId);
-        Object.entries(Services.guildInfo.playerPositions[socket.data.wynnGuildId]).map(([username, position]) => {
-            io.of("/discord")
-                .to(socket.id)
-                .emit("playerPosition", { username: username, x: position.x, y: position.y, z: position.z });
-        });
+        // Object.entries(Services.guildInfo.playerPositions[socket.data.wynnGuildId]).map(([username, position]) => {
+        //     io.of("/discord")
+        //         .to(socket.id)
+        //         .emit("playerPosition", { username: username, x: position.x, y: position.y, z: position.z });
+        // });
         console.log(socket.data.username, "joined", socket.data.wynnGuildId);
     }
 
@@ -228,27 +228,27 @@ io.of("/discord").on("connection", (socket) => {
             y: data.y,
             z: data.z,
         };
-        socket
-            .to(socket.data.wynnGuildId)
-            .emit("playerPosition", { username: socket.data.username, x: data.x, y: data.y, z: data.z });
+        // socket
+        //     .to(socket.data.wynnGuildId)
+        //     .emit("playerPosition", { username: socket.data.username, x: data.x, y: data.y, z: data.z });
     });
 
     socket.on("requestAllPositions", () => {
-        Object.entries(Services.guildInfo.playerPositions[socket.data.wynnGuildId]).map(([username, position]) => {
-            io.of("/discord")
-                .to(socket.id)
-                .emit("playerPosition", { username: username, x: position.x, y: position.y, z: position.z });
-        });
+        // Object.entries(Services.guildInfo.playerPositions[socket.data.wynnGuildId]).map(([username, position]) => {
+        //     io.of("/discord")
+        //         .to(socket.id)
+        //         .emit("playerPosition", { username: username, x: position.x, y: position.y, z: position.z });
+        // });
     });
 
     /**
      * Event that gets fired upon a player notifying the server to be hidden
      */
     socket.on("playerHide", () => {
-        if (Object.hasOwn(Services.guildInfo.playerPositions[socket.data.wynnGuildId], socket.data.username)) {
-            delete Services.guildInfo.playerPositions[socket.data.wynnGuildId][socket.data.username];
-            socket.to(socket.data.wynnGuildId).emit("playerHide", socket.data.username);
-        }
+        // if (Object.hasOwn(Services.guildInfo.playerPositions[socket.data.wynnGuildId], socket.data.username)) {
+        //     delete Services.guildInfo.playerPositions[socket.data.wynnGuildId][socket.data.username];
+        //     socket.to(socket.data.wynnGuildId).emit("playerHide", socket.data.username);
+        // }
     });
 
     /**
@@ -293,10 +293,10 @@ io.of("/discord").on("connection", (socket) => {
                         disconnectTimers[socket.data.discordUuid] = null;
                     }, 10000);
                 }
-                if (Object.hasOwn(Services.guildInfo.playerPositions[socket.data.wynnGuildId], socket.data.username)) {
-                    delete Services.guildInfo.playerPositions[socket.data.wynnGuildId][socket.data.username];
-                    io.of("/discord").to(socket.data.wynnGuildId).emit("playerHide", socket.data.username);
-                }
+                // if (Object.hasOwn(Services.guildInfo.playerPositions[socket.data.wynnGuildId], socket.data.username)) {
+                //     delete Services.guildInfo.playerPositions[socket.data.wynnGuildId][socket.data.username];
+                //     io.of("/discord").to(socket.data.wynnGuildId).emit("playerHide", socket.data.username);
+                // }
             }
         }),
     );
