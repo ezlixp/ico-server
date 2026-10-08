@@ -34,7 +34,7 @@ export class RaidService {
         console.log(users.length);
         for (var i = 0; i < users.length; ++i) {
             console.log(i);
-            let username = "unknown";
+            let username = users[i].cachedUsername ?? "unknown";
             try {
                 username = await uuidToUsername(users[i].mcUuid);
             } catch {}

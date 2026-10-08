@@ -3,6 +3,7 @@ import { BaseModel } from "../entities/baseModel";
 
 export interface IGuildUser extends BaseModel {
     mcUuid: string;
+    cachedUsername: string;
     aspects: number;
     emeralds: number;
     raids: number;
@@ -12,6 +13,7 @@ export interface IGuildUser extends BaseModel {
 const guildUserSchema: Schema<IGuildUser> = new Schema(
     {
         mcUuid: { type: String, required: true },
+        cachedUsername: { type: String },
         aspects: { type: Number, required: true, default: 0 },
         emeralds: { type: Number, required: true, default: 0 },
         raids: { type: Number, required: true, default: 0 },
