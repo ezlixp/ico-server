@@ -25,19 +25,27 @@ export class RaidService {
     }
 
     async getRewards(wynnGuildId: string): Promise<IRaidRewardsResponse[]> {
+        console.log(wynnGuildId);
         this.validator.validateGuild(wynnGuildId);
         const users = await this.databases[wynnGuildId].GuildUserRepository.find({
             $or: [{ aspects: { $ne: 0 } }, { emeralds: { $gt: 0 } }],
         });
         const res: IRaidRewardsResponse[] = [];
+        console.log(users.length);
         for (var i = 0; i < users.length; ++i) {
+            console.log(i);
+            let username = "unknown";
+            try {
+                username = await uuidToUsername(users[i].mcUuid);
+            } catch {}
             res.push({
-                mcUsername: await uuidToUsername(users[i].mcUuid),
+                mcUsername: username,
                 raids: users[i].raids,
                 aspects: users[i].aspects,
                 liquidEmeralds: users[i].emeralds / 4096,
             });
         }
+        console.log(res);
         return res;
     }
 
