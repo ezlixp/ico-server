@@ -27,7 +27,7 @@ export class RaidService {
     async getRewards(wynnGuildId: string): Promise<IRaidRewardsResponse[]> {
         this.validator.validateGuild(wynnGuildId);
         const users = await this.databases[wynnGuildId].GuildUserRepository.find({
-            $or: [{ aspects: { $gte: 1 } }, { emeralds: { $gt: 0 } }],
+            $or: [{ aspects: { $ne: 0 } }, { emeralds: { $gt: 0 } }],
         });
         const res: IRaidRewardsResponse[] = [];
         for (var i = 0; i < users.length; ++i) {

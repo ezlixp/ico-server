@@ -29,9 +29,9 @@ FROM node:22-slim AS backend-final
 WORKDIR /usr/local/backend
 ENV NODE_ENV=production
 
-COPY --from=backend-prod-deps /usr/local/app/node_modules ./node_modules
-COPY --from=backend-build /usr/local/app/dist/src ./dist
-COPY .env.production ./
+COPY --from=backend-prod-deps /usr/local/backend/node_modules ./node_modules
+COPY --from=backend-build /usr/local/backend/dist/src ./dist
+COPY .env.production ./.env
 
 EXPOSE 3000
 CMD ["node", "dist/index.js"]
