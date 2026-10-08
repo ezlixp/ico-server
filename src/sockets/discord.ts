@@ -223,14 +223,14 @@ io.of("/discord").on("connection", (socket) => {
      */
     socket.on("playerPosition", (message: string) => {
         const data: IC2SPlayerPositionMessage = JSON.parse(message);
-        Services.guildInfo.playerPositions[socket.data.wynnGuildId][socket.data.username] = {
-            x: data.x,
-            y: data.y,
-            z: data.z,
-        };
-        // socket
-        //     .to(socket.data.wynnGuildId)
-        //     .emit("playerPosition", { username: socket.data.username, x: data.x, y: data.y, z: data.z });
+        // Services.guildInfo.playerPositions[socket.data.wynnGuildId][socket.data.username] = {
+        //     x: data.x,
+        //     y: data.y,
+        //     z: data.z,
+        // };
+        socket
+            .to(socket.data.wynnGuildId)
+            .emit("playerPosition", { username: socket.data.username, x: data.x, y: data.y, z: data.z });
     });
 
     socket.on("requestAllPositions", () => {
