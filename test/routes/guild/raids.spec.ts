@@ -108,10 +108,22 @@ describe("Raids routes", () => {
                     liquidEmeralds: expect.closeTo(0.999755859375),
                 },
                 {
+                    mcUsername: "3",
+                    aspects: 0.5,
+                    raids: 2000,
+                    liquidEmeralds: 0,
+                },
+                {
                     mcUsername: "4",
                     raids: 2000,
                     aspects: 0.5,
                     liquidEmeralds: 2,
+                },
+                {
+                    mcUsername: "5",
+                    aspects: -1000,
+                    raids: 2000,
+                    liquidEmeralds: expect.closeTo(-24.4140625),
                 },
             ]);
         });
