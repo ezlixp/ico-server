@@ -17,7 +17,7 @@ const TIME_DELTA = 1.728e9;
 
 export async function usernameToUuid(username: string): Promise<string> {
     const res = await bulkUsernameToUuid([username]);
-    if (!res.status) throw new HttpClientError("couldn't convert oopsies");
+    if (!res.status) throw new HttpClientError("unkown error, please try again later");
     return res.translation[username];
 }
 
