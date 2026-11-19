@@ -5,7 +5,7 @@ export interface IUser extends BaseModel {
     discordUuid: string;
     mcUuid: string;
     cachedUsername?: string;
-    nameCacheTime?: number;
+    cAt: number;
     blocked: string[];
     banned: boolean;
     takeAspects: boolean;
@@ -21,7 +21,7 @@ const userSchema: Schema<IUser> = new Schema(
         // can be forged
         mcUuid: { type: String },
         cachedUsername: { type: String },
-        nameCacheTime: { type: Number },
+        cAt: { type: Number, required: true, default: 0 },
         blocked: {
             type: [String],
             required: true,

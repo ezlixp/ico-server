@@ -1,4 +1,5 @@
 import { HttpClientError } from "../../errors/implementations/httpClientError";
+import Services from "../../services/services";
 
 /** Caches username to UUID conversions from Mojang api.*/
 const usernameUuidMap: { [key: string]: { uuid: string; timestamp: number } } = {};
@@ -99,5 +100,10 @@ export async function uuidToUsername(uuid: string): Promise<string> {
         timestamp: Date.now(),
     };
     usernameUuidMap[responseBody.name] = { uuid: uuid, timestamp: Date.now() };
+    const user = await Services.user.getUserByMcUuid(uuid);
+    if (user) {
+        user.cachedUsername = responseBody.name;
+        user.cAt = Date.now();
+    }
     return responseBody.name;
 }

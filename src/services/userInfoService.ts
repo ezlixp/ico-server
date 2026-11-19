@@ -39,7 +39,7 @@ export class UserInfoService {
     async getUserByCachedUsername(username: string): Promise<HydratedDocument<IUser> | null> {
         try {
             const user = await this.getUser({ cachedUsername: username });
-            if (Date.now() - user.nameCacheTime! < 1.728e9) return user;
+            if (Date.now() - user.cAt! < 1.728e9) return user;
             return null;
         } catch (err) {
             if (err instanceof AppError && err.message === UserErrors.NOT_FOUND) return null;
