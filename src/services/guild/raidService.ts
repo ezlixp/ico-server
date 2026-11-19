@@ -103,7 +103,6 @@ export class RaidService {
             { sort: { raids: "descending" } },
         );
         let formattedTopUsers: ILeaderboardUser[] = [];
-        // TODO implement mojang api bulk uuid to username call
         for (let i = 0; i < users.length; i++) {
             formattedTopUsers.push({
                 mcUsername: (await uuidToUsername(users[i].mcUuid).catch(() => {})) ?? "unknown",
