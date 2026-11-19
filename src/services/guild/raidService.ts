@@ -25,13 +25,11 @@ export class RaidService {
     }
 
     async getRewards(wynnGuildId: string): Promise<IRaidRewardsResponse[]> {
-        console.log(wynnGuildId);
         this.validator.validateGuild(wynnGuildId);
         const users = await this.databases[wynnGuildId].GuildUserRepository.find({
             $or: [{ aspects: { $ne: 0 } }, { emeralds: { $gt: 0 } }],
         });
         const res: IRaidRewardsResponse[] = [];
-        console.log(users.length);
         for (var i = 0; i < users.length; ++i) {
             let username = users[i].cachedUsername ?? "unknown";
             try {
@@ -46,7 +44,6 @@ export class RaidService {
                 liquidEmeralds: users[i].emeralds / 4096,
             });
         }
-        console.log(res);
         return res;
     }
 
@@ -109,7 +106,7 @@ export class RaidService {
         // TODO implement mojang api bulk uuid to username call
         for (let i = 0; i < users.length; i++) {
             formattedTopUsers.push({
-                mcUsername: await uuidToUsername(users[i].mcUuid),
+                mcUsername: (await uuidToUsername(users[i].mcUuid).catch(() => {})) ?? "unknown",
                 raids: users[i].raids,
             });
         }
