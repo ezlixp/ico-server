@@ -13,7 +13,7 @@ export async function usernameToUuid(username: string): Promise<string> {
         return usernameUuidMap[username].uuid;
     }
 
-    const url = `https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`;
+    const url = `https://api.mojang.com/minecraft/profile/lookup/name/${username}`;
     const apiResponse = await fetch(url);
     console.log(apiResponse);
 
@@ -44,7 +44,7 @@ export async function uuidToUsername(uuid: string): Promise<string> {
         return uuidUsernameMap[uuid].username;
     }
 
-    const url = `https://api.minecraftservices.com/minecraft/profile/lookup/${uuid}`;
+    const url = `https://api.mojang.com/minecraft/profile/lookup/${uuid}`;
     const apiResponse = await fetch(url);
 
     if (!apiResponse.body) {
