@@ -211,15 +211,10 @@ export const getMessage = (
             );
 
             let discordUuid: string | undefined;
-            usernameToUuid(header)
-                .then(async (uuid) => {
-                    try {
-                        const user = await Services.user.getUserByMcUuid(uuid);
-                        discordUuid = user?.discordUuid;
-                    } catch {}
-                })
-                .catch(() => {})
-                .finally(() => {
+            Services.user
+                .getUserByCachedUsername(header)
+                .then((user) => {
+                    discordUuid = user?.discordUuid;
                     const message = sanitize(rawMessage).replace(
                         ENCODED_DATA_PATTERN,
                         (match, _) => `**__${decodeItem(match).name}__**`,
@@ -232,7 +227,8 @@ export const getMessage = (
                             ListeningChannel: channel,
                         });
                     });
-                });
+                })
+                .catch(() => {});
             break;
         }
     }
