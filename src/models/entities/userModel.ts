@@ -4,6 +4,8 @@ import { BaseModel } from "./baseModel";
 export interface IUser extends BaseModel {
     discordUuid: string;
     mcUuid: string;
+    cachedUsername?: string;
+    cAt: number;
     blocked: string[];
     banned: boolean;
     takeAspects: boolean;
@@ -18,6 +20,8 @@ const userSchema: Schema<IUser> = new Schema(
         discordUuid: { type: String, required: true },
         // can be forged
         mcUuid: { type: String },
+        cachedUsername: { type: String },
+        cAt: { type: Number, required: true, default: 0 },
         blocked: {
             type: [String],
             required: true,

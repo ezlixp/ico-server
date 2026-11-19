@@ -34,8 +34,24 @@ describe("Discord socket events", () => {
             broadcastingChannel: "1290068270963232868",
             mutedUuids: ["1"],
         });
-        await UserModel.insertMany([{ mcUuid: "pixlze", discordUuid: "752610633580675176", takeAspects: false }]);
-        await UserModel.insertMany([{ mcUuid: "pixlze2", discordUuid: "752610633580675175", takeAspects: false }]);
+        await UserModel.insertMany([
+            {
+                mcUuid: "pixlze",
+                discordUuid: "752610633580675176",
+                takeAspects: false,
+                cachedUsername: "pixlze",
+                cAt: Date.now(),
+            },
+        ]);
+        await UserModel.insertMany([
+            {
+                mcUuid: "pixlze2",
+                discordUuid: "752610633580675175",
+                takeAspects: false,
+                cachedUsername: "pixlze2",
+                cAt: Date.now(),
+            },
+        ]);
         Services.guildInfo.registerAllGuildData();
     });
 
