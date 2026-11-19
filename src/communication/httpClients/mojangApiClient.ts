@@ -15,6 +15,7 @@ export async function usernameToUuid(username: string): Promise<string> {
 
     const url = `https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`;
     const apiResponse = await fetch(url);
+    console.log(apiResponse);
 
     if (!apiResponse.body) {
         throw new HttpClientError("empty mojang username to uuid response");
