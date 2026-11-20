@@ -13,13 +13,43 @@ export interface IBulkResponse {
     translation: Record<string, string>;
     status: boolean;
 }
+interface IProfile {
+    raw_id: string;
+    username: string;
+}
 
 const TIME_DELTA = 1.728e9;
 
+async function getProfile(key: string): Promise<IProfile> {
+    const url = `https://playerdb.co/api/player/minecraft/${key}`;
+    const apiResponse = await fetch(url);
+    try {
+        const responseBody: IProfile = (await apiResponse.clone().json()).data.player;
+        return responseBody;
+    } catch (error) {
+        throw new HttpClientError(
+            `couldn't get profile for key: ${key} error: ${error} response: ${apiResponse.text()}`,
+        );
+    }
+}
+
 export async function usernameToUuid(username: string): Promise<string> {
-    const res = await bulkUsernameToUuid([username]);
-    if (!res.status) throw new HttpClientError("unkown error, please try again later");
-    return res.translation[username];
+    if (usernameUuidMap[username] && Date.now() - usernameUuidMap[username].timestamp < 1.728e9) {
+        return usernameUuidMap[username].uuid;
+    }
+
+    const profile = await getProfile(username);
+    usernameUuidMap[username] = {
+        uuid: profile.raw_id,
+        timestamp: Date.now(),
+    };
+    uuidUsernameMap[profile.raw_id] = { username: username, timestamp: Date.now() };
+    const user = await Services.user.getUserByMcUuid(profile.raw_id);
+    if (user) {
+        user.cachedUsername = username;
+        user.cAt = Date.now();
+    }
+    return profile.raw_id;
 }
 
 export async function bulkUsernameToUuid(usernames: string[]): Promise<IBulkResponse> {
@@ -82,28 +112,16 @@ export async function uuidToUsername(uuid: string): Promise<string> {
         return uuidUsernameMap[uuid].username;
     }
 
-    const url = `https://api.mojang.com/minecraft/profile/lookup/${uuid}`;
-    const apiResponse = await fetch(url);
-
-    if (!apiResponse.body) {
-        throw new HttpClientError("empty mojang uuid to username response");
-    }
-
-    const responseBody: { name: string; errorMessage: string } = await apiResponse.json();
-
-    if (responseBody.errorMessage) {
-        throw new HttpClientError(responseBody.errorMessage);
-    }
-
+    const profile = await getProfile(uuid);
     uuidUsernameMap[uuid] = {
-        username: responseBody.name,
+        username: profile.username,
         timestamp: Date.now(),
     };
-    usernameUuidMap[responseBody.name] = { uuid: uuid, timestamp: Date.now() };
+    usernameUuidMap[profile.username] = { uuid: uuid, timestamp: Date.now() };
     const user = await Services.user.getUserByMcUuid(uuid);
     if (user) {
-        user.cachedUsername = responseBody.name;
+        user.cachedUsername = profile.username;
         user.cAt = Date.now();
     }
-    return responseBody.name;
+    return profile.username;
 }
