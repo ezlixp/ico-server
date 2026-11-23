@@ -228,9 +228,9 @@ io.of("/discord").on("connection", (socket) => {
         //     y: data.y,
         //     z: data.z,
         // };
-        socket
-            .to(socket.data.wynnGuildId)
-            .emit("playerPosition", { username: socket.data.username, x: data.x, y: data.y, z: data.z });
+        // socket
+          //  .to(socket.data.wynnGuildId)
+         //   .emit("playerPosition", { username: socket.data.username, x: data.x, y: data.y, z: data.z });
     });
 
     socket.on("requestAllPositions", () => {
