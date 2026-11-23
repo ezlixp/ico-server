@@ -104,7 +104,7 @@ export class GuildInfoService {
         );
     }
 
-    public async isUserMuted(wynnGuildId: string, mcUuid: string) {
+    public async isUserMuted(wynnGuildId: string, discordUuid: string) {
         const guild = await this.repository.findOne(
             { wynnGuildId: wynnGuildId },
             undefined,
@@ -112,7 +112,7 @@ export class GuildInfoService {
             GuildErrors.NOT_CONFIGURED,
         );
 
-        return guild.mutedUuids.includes(mcUuid);
+        return guild.mutedUuids.includes(discordUuid);
     }
 
     public async checkDuplicateGuild(discordGuildId: string, wynnGuildId: string) {
